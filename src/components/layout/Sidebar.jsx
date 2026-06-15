@@ -1,0 +1,188 @@
+import { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import {
+    MdDashboard, MdOutlineAutoAwesome, MdLanguage, MdBook, MdCardGiftcard,
+    MdFavorite, MdQuestionAnswer, MdStar, MdLocalOffer, MdPeople,
+    MdPayment, MdPersonAdd, MdReport, MdPages, MdAccountBalanceWallet,
+    MdList, MdNotifications, MdAdd, MdChevronRight, MdChevronLeft,
+    MdClose, MdMenu
+} from 'react-icons/md';
+import { FaHeart } from 'react-icons/fa';
+import './Sidebar.css';
+
+const menuItems = [
+    { label: 'Dashboard', icon: <MdDashboard />, path: '/' },
+    {
+        label: 'Interest', icon: <MdOutlineAutoAwesome />,
+        children: [
+            { label: 'Add Interest', icon: <MdAdd />, path: '/interest/add' },
+            { label: 'List Interest', icon: <MdList />, path: '/interest/list' },
+        ]
+    },
+    {
+        label: 'Language', icon: <MdLanguage />,
+        children: [
+            { label: 'Add Language', icon: <MdAdd />, path: '/language/add' },
+            { label: 'List Language', icon: <MdList />, path: '/language/list' },
+        ]
+    },
+    {
+        label: 'Religion', icon: <MdBook />,
+        children: [
+            { label: 'Add Religion', icon: <MdAdd />, path: '/religion/add' },
+            { label: 'List Religion', icon: <MdList />, path: '/religion/list' },
+        ]
+    },
+    {
+        label: 'Gift', icon: <MdCardGiftcard />,
+        children: [
+            { label: 'Add Gift', icon: <MdAdd />, path: '/gift/add' },
+            { label: 'List Gift', icon: <MdList />, path: '/gift/list' },
+        ]
+    },
+    {
+        label: 'Relation Goal', icon: <MdFavorite />,
+        children: [
+            { label: 'Add Relation Goal', icon: <MdAdd />, path: '/relation-goal/add' },
+            { label: 'List Relation Goal', icon: <MdList />, path: '/relation-goal/list' },
+        ]
+    },
+    {
+        label: 'FAQ', icon: <MdQuestionAnswer />,
+        children: [
+            { label: 'Add FAQ', icon: <MdAdd />, path: '/faq/add' },
+            { label: 'List FAQ', icon: <MdList />, path: '/faq/list' },
+        ]
+    },
+    {
+        label: 'Plan', icon: <MdStar />,
+        children: [
+            { label: 'Add Plan', icon: <MdAdd />, path: '/plan/add' },
+            { label: 'List Plan', icon: <MdList />, path: '/plan/list' },
+        ]
+    },
+    {
+        label: 'Package', icon: <MdLocalOffer />,
+        children: [
+            { label: 'Add Package', icon: <MdAdd />, path: '/package/add' },
+            { label: 'List Package', icon: <MdList />, path: '/package/list' },
+        ]
+    },
+    {
+        label: 'Staff', icon: <MdPeople />,
+        children: [
+            { label: 'Add Staff', icon: <MdAdd />, path: '/staff/add' },
+            { label: 'List Staff', icon: <MdList />, path: '/staff/list' },
+        ]
+    },
+    { label: 'Payment List', icon: <MdPayment />, path: '/payment-list' },
+    { label: 'Fake User Generator', icon: <MdPersonAdd />, path: '/fake-user-generator' },
+    { label: 'Report List', icon: <MdReport />, path: '/report-list' },
+    {
+        label: 'Page', icon: <MdPages />,
+        children: [
+            { label: 'Add Page', icon: <MdAdd />, path: '/page/add' },
+            { label: 'List Page', icon: <MdList />, path: '/page/list' },
+        ]
+    },
+    { label: 'Payout List', icon: <MdAccountBalanceWallet />, path: '/payout-list' },
+    { label: 'User List', icon: <MdPeople />, path: '/user-list' },
+    { label: 'Push Notification', icon: <MdNotifications />, path: '/push-notification' },
+];
+
+export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
+    const [openMenus, setOpenMenus] = useState({});
+    const location = useLocation();
+
+    const toggleMenu = (label) => {
+        setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
+    };
+
+    const isChildActive = (children) =>
+        children?.some(c => location.pathname === c.path);
+
+    return (
+        <>
+            {/* Mobile overlay */}
+            {mobileOpen && (
+                <div className="sidebar-overlay" onClick={onMobileClose} />
+            )}
+
+            <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+                {/* Logo */}
+                <div className="sidebar-logo">
+                    <div className="sidebar-logo-icon">
+                        <FaHeart />
+                    </div>
+                    {!collapsed && (
+                        <div className="sidebar-logo-text">
+                            <span className="sidebar-logo-name">Inakkam</span>
+                            <span className="sidebar-logo-sub">Admin Panel</span>
+                        </div>
+                    )}
+                    <button className="sidebar-collapse-btn" onClick={onToggle}>
+                        {collapsed ? <MdChevronRight /> : <MdChevronLeft />}
+                    </button>
+                </div>
+
+                {/* Nav */}
+                <nav className="sidebar-nav">
+                    {menuItems.map((item) => {
+                        if (item.children) {
+                            const isOpen = openMenus[item.label] || isChildActive(item.children);
+                            return (
+                                <div key={item.label} className={`sidebar-group ${isOpen ? 'open' : ''}`}>
+                                    <button
+                                        className={`sidebar-item sidebar-item-parent ${isChildActive(item.children) ? 'active-parent' : ''}`}
+                                        onClick={() => toggleMenu(item.label)}
+                                        title={collapsed ? item.label : ''}
+                                    >
+                                        <span className="sidebar-icon">{item.icon}</span>
+                                        {!collapsed && (
+                                            <>
+                                                <span className="sidebar-label">{item.label}</span>
+                                                <MdChevronRight className={`sidebar-arrow ${isOpen ? 'rotated' : ''}`} />
+                                            </>
+                                        )}
+                                    </button>
+                                    {!collapsed && isOpen && (
+                                        <div className="sidebar-submenu">
+                                            {item.children.map(child => (
+                                                <NavLink
+                                                    key={child.path}
+                                                    to={child.path}
+                                                    className={({ isActive }) =>
+                                                        `sidebar-subitem ${isActive ? 'active' : ''}`
+                                                    }
+                                                    onClick={onMobileClose}
+                                                >
+                                                    <span className="sidebar-icon">{child.icon}</span>
+                                                    <span className="sidebar-label">{child.label}</span>
+                                                </NavLink>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        }
+                        return (
+                            <NavLink
+                                key={item.path}
+                                to={item.path}
+                                end={item.path === '/'}
+                                className={({ isActive }) =>
+                                    `sidebar-item ${isActive ? 'active' : ''}`
+                                }
+                                title={collapsed ? item.label : ''}
+                                onClick={onMobileClose}
+                            >
+                                <span className="sidebar-icon">{item.icon}</span>
+                                {!collapsed && <span className="sidebar-label">{item.label}</span>}
+                            </NavLink>
+                        );
+                    })}
+                </nav>
+            </aside>
+        </>
+    );
+}
