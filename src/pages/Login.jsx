@@ -17,34 +17,29 @@ export default function LoginPage() {
         e.preventDefault();
         setLoading(true);
         try {
-            // Demo: accept hardcoded admin or call backend
-            if (
-                (form.email === 'admin' || form.email === 'admin@inakkam.com') &&
-                form.password === 'admin@123'
-            ) {
-                login({ name: 'Administrator', email: form.email, role: 'admin' });
-                localStorage.setItem('inakkam_admin_token', 'demo-admin-token');
-                toast.success('Welcome back, Admin!');
+            let email = form.email.trim();
+            if (email === 'admin') {
+                email = 'admin@inakkam.com';
+            }
+
+            // Try real backend
+            const res = await fetch('/api/admin/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password: form.password }),
+            });
+            const data = await res.json();
+            if (data.success) {
+                login(data.admin);
+                localStorage.setItem('inakkam_admin_token', data.token);
+                toast.success('Welcome back!');
                 navigate('/');
             } else {
-                // Try real backend
-                const res = await fetch('/api/admin/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email: form.email, password: form.password }),
-                });
-                const data = await res.json();
-                if (data.success) {
-                    login(data.admin);
-                    localStorage.setItem('inakkam_admin_token', data.token);
-                    toast.success('Welcome back!');
-                    navigate('/');
-                } else {
-                    toast.error(data.message || 'Invalid credentials');
-                }
+                toast.error(data.message || 'Invalid credentials');
             }
-        } catch {
-            toast.error('Invalid credentials. Use admin / admin@123');
+        } catch (err) {
+            console.error('Login error:', err);
+            toast.error('Could not connect to the server. Please check if backend is running.');
         } finally {
             setLoading(false);
         }
