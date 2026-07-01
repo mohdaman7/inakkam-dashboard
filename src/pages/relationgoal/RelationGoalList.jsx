@@ -3,6 +3,7 @@ import DataTable from '../../components/DataTable';
 import RelationGoalAdd from './RelationGoalAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 const DEMO = [
     { _id: '1', title: 'Casual Dating', subtitle: 'Just having fun', status: 1 },
@@ -24,13 +25,47 @@ export default function RelationGoalList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const fetchData = async () => { setLoading(true); try { const res = await api.get('/relation-goals'); if (res.data?.goals?.length) setData(res.data.goals); } catch { } finally { setLoading(false); } };
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/relation-goals');
+            if (res.data?.goals?.length) setData(res.data.goals);
+        } catch { } finally { setLoading(false); }
+    };
+
+    const handleDelete = async (row) => {
+        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+            try {
+                await api.delete(`/relation-goals/${row._id}`);
+                toast.success('Relation Goal deleted successfully!');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                toast.error(err.response?.data?.message || 'Failed to delete relation goal');
+            }
+        }
+    };
+
     useEffect(() => { fetchData(); }, []);
+
     if (editItem) return <RelationGoalAdd editData={editItem} onSaved={() => { setEditItem(null); fetchData(); }} />;
+
     return (
         <div>
-            <div className="page-header"><h1 className="page-title">List Relation Goal</h1><button className="btn btn-primary" onClick={() => window.location.href = '/relation-goal/add'}><MdAdd /> Add Relation Goal</button></div>
-            <div className="card"><DataTable columns={columns} data={data} loading={loading} onEdit={setEditItem} /></div>
+            <div className="page-header">
+                <h1 className="page-title">List Relation Goal</h1>
+                <button className="btn btn-primary" onClick={() => window.location.href = '/relation-goal/add'}><MdAdd /> Add Relation Goal</button>
+            </div>
+            <div className="card">
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    loading={loading}
+                    onEdit={setEditItem}
+                    onDelete={handleDelete}
+                />
+            </div>
         </div>
     );
 }

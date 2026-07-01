@@ -3,6 +3,7 @@ import DataTable from '../../components/DataTable';
 import LanguageAdd from './LanguageAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 const DEMO = [
     { _id: '1', title: 'English', image: '', status: 1 }, { _id: '2', title: 'Hindi', image: '', status: 1 },
@@ -27,8 +28,23 @@ export default function LanguageList() {
 
     const fetchData = async () => {
         setLoading(true);
-        try { const res = await api.get('/languages'); if (res.data?.languages?.length) setData(res.data.languages); }
-        catch { } finally { setLoading(false); }
+        try {
+            const res = await api.get('/languages');
+            if (res.data?.languages?.length) setData(res.data.languages);
+        } catch { } finally { setLoading(false); }
+    };
+
+    const handleDelete = async (row) => {
+        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+            try {
+                await api.delete(`/languages/${row._id}`);
+                toast.success('Language deleted successfully!');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                toast.error(err.response?.data?.message || 'Failed to delete language');
+            }
+        }
     };
 
     useEffect(() => { fetchData(); }, []);
@@ -41,7 +57,15 @@ export default function LanguageList() {
                 <h1 className="page-title">List Language</h1>
                 <button className="btn btn-primary" onClick={() => window.location.href = '/language/add'}><MdAdd /> Add Language</button>
             </div>
-            <div className="card"><DataTable columns={columns} data={data} loading={loading} onEdit={setEditItem} /></div>
+            <div className="card">
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    loading={loading}
+                    onEdit={setEditItem}
+                    onDelete={handleDelete}
+                />
+            </div>
         </div>
     );
 }

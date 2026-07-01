@@ -3,6 +3,7 @@ import DataTable from '../../components/DataTable';
 import PlanAdd from './PlanAdd';
 import { MdAdd, MdCheck, MdClose } from 'react-icons/md';
 import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 const DEMO = [
     { _id: '1', title: 'Inakkam Boost', amount: 14.99, dayLimit: 30, filterInclude: true, directChat: true, chat: true, likeMenu: false, audioVideo: false, status: 1 },
@@ -25,13 +26,47 @@ export default function PlanList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const fetchData = async () => { setLoading(true); try { const res = await api.get('/plans'); if (res.data?.plans?.length) setData(res.data.plans); } catch { } finally { setLoading(false); } };
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/plans');
+            if (res.data?.plans?.length) setData(res.data.plans);
+        } catch { } finally { setLoading(false); }
+    };
+
+    const handleDelete = async (row) => {
+        if (window.confirm(`Are you sure you want to delete plan "${row.title}"?`)) {
+            try {
+                await api.delete(`/plans/${row._id}`);
+                toast.success('Plan deleted successfully!');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                toast.error(err.response?.data?.message || 'Failed to delete plan');
+            }
+        }
+    };
+
     useEffect(() => { fetchData(); }, []);
+
     if (editItem) return <PlanAdd editData={editItem} onSaved={() => { setEditItem(null); fetchData(); }} />;
+
     return (
         <div>
-            <div className="page-header"><h1 className="page-title">List Plan</h1><button className="btn btn-primary" onClick={() => window.location.href = '/plan/add'}><MdAdd /> Add Plan</button></div>
-            <div className="card"><DataTable columns={columns} data={data} loading={loading} onEdit={setEditItem} /></div>
+            <div className="page-header">
+                <h1 className="page-title">List Plan</h1>
+                <button className="btn btn-primary" onClick={() => window.location.href = '/plan/add'}><MdAdd /> Add Plan</button>
+            </div>
+            <div className="card">
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    loading={loading}
+                    onEdit={setEditItem}
+                    onDelete={handleDelete}
+                />
+            </div>
         </div>
     );
 }

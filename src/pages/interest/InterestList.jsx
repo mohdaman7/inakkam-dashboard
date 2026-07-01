@@ -40,6 +40,19 @@ export default function InterestList() {
         } catch { /* use demo */ } finally { setLoading(false); }
     };
 
+    const handleDelete = async (row) => {
+        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+            try {
+                await api.delete(`/interests/${row._id}`);
+                toast.success('Interest deleted successfully!');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                toast.error(err.response?.data?.message || 'Failed to delete interest');
+            }
+        }
+    };
+
     useEffect(() => { fetchData(); }, []);
 
     if (editItem) {
@@ -55,7 +68,13 @@ export default function InterestList() {
                 </button>
             </div>
             <div className="card">
-                <DataTable columns={columns} data={data} loading={loading} onEdit={setEditItem} />
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    loading={loading}
+                    onEdit={setEditItem}
+                    onDelete={handleDelete}
+                />
             </div>
         </div>
     );

@@ -3,6 +3,7 @@ import DataTable from '../../components/DataTable';
 import ReligionAdd from './ReligionAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 const DEMO = [
     { _id: '1', title: 'Hindu', status: 1 }, { _id: '2', title: 'Muslim', status: 1 },
@@ -22,16 +23,47 @@ export default function ReligionList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const fetchData = async () => { setLoading(true); try { const res = await api.get('/religions'); if (res.data?.religions?.length) setData(res.data.religions); } catch { } finally { setLoading(false); } };
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/religions');
+            if (res.data?.religions?.length) setData(res.data.religions);
+        } catch { } finally { setLoading(false); }
+    };
+
+    const handleDelete = async (row) => {
+        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+            try {
+                await api.delete(`/religions/${row._id}`);
+                toast.success('Religion deleted successfully!');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                toast.error(err.response?.data?.message || 'Failed to delete religion');
+            }
+        }
+    };
+
     useEffect(() => { fetchData(); }, []);
+
     if (editItem) return <ReligionAdd editData={editItem} onSaved={() => { setEditItem(null); fetchData(); }} />;
+
     return (
         <div>
             <div className="page-header">
                 <h1 className="page-title">List Religion</h1>
                 <button className="btn btn-primary" onClick={() => window.location.href = '/religion/add'}><MdAdd /> Add Religion</button>
             </div>
-            <div className="card"><DataTable columns={columns} data={data} loading={loading} onEdit={setEditItem} /></div>
+            <div className="card">
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    loading={loading}
+                    onEdit={setEditItem}
+                    onDelete={handleDelete}
+                />
+            </div>
         </div>
     );
 }

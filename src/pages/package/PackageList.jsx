@@ -3,6 +3,7 @@ import DataTable from '../../components/DataTable';
 import PackageAdd from './PackageAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 const DEMO = [
     { _id: '1', totalCoin: 50, amount: 4.99, status: 1 },
@@ -18,13 +19,47 @@ export default function PackageList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const fetchData = async () => { setLoading(true); try { const res = await api.get('/packages'); if (res.data?.packages?.length) setData(res.data.packages); } catch { } finally { setLoading(false); } };
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/packages');
+            if (res.data?.packages?.length) setData(res.data.packages);
+        } catch { } finally { setLoading(false); }
+    };
+
+    const handleDelete = async (row) => {
+        if (window.confirm(`Are you sure you want to delete package with ${row.totalCoin} coins?`)) {
+            try {
+                await api.delete(`/packages/${row._id}`);
+                toast.success('Package deleted successfully!');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                toast.error(err.response?.data?.message || 'Failed to delete package');
+            }
+        }
+    };
+
     useEffect(() => { fetchData(); }, []);
+
     if (editItem) return <PackageAdd editData={editItem} onSaved={() => { setEditItem(null); fetchData(); }} />;
+
     return (
         <div>
-            <div className="page-header"><h1 className="page-title">List Package</h1><button className="btn btn-primary" onClick={() => window.location.href = '/package/add'}><MdAdd /> Add Package</button></div>
-            <div className="card"><DataTable columns={columns} data={data} loading={loading} onEdit={setEditItem} /></div>
+            <div className="page-header">
+                <h1 className="page-title">List Package</h1>
+                <button className="btn btn-primary" onClick={() => window.location.href = '/package/add'}><MdAdd /> Add Package</button>
+            </div>
+            <div className="card">
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    loading={loading}
+                    onEdit={setEditItem}
+                    onDelete={handleDelete}
+                />
+            </div>
         </div>
     );
 }

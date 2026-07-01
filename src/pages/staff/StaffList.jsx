@@ -3,6 +3,7 @@ import DataTable from '../../components/DataTable';
 import StaffAdd from './StaffAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 const DEMO = [
     { _id: '1', email: 'staff1@inakkam.com', password: '••••••••', status: 1 },
@@ -18,13 +19,47 @@ export default function StaffList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
-    const fetchData = async () => { setLoading(true); try { const res = await api.get('/staff'); if (res.data?.staff?.length) setData(res.data.staff); } catch { } finally { setLoading(false); } };
+
+    const fetchData = async () => {
+        setLoading(true);
+        try {
+            const res = await api.get('/staff');
+            if (res.data?.staff?.length) setData(res.data.staff);
+        } catch { } finally { setLoading(false); }
+    };
+
+    const handleDelete = async (row) => {
+        if (window.confirm(`Are you sure you want to delete staff account "${row.email}"?`)) {
+            try {
+                await api.delete(`/staff/${row._id}`);
+                toast.success('Staff deleted successfully!');
+                fetchData();
+            } catch (err) {
+                console.error(err);
+                toast.error(err.response?.data?.message || 'Failed to delete staff');
+            }
+        }
+    };
+
     useEffect(() => { fetchData(); }, []);
+
     if (editItem) return <StaffAdd editData={editItem} onSaved={() => { setEditItem(null); fetchData(); }} />;
+
     return (
         <div>
-            <div className="page-header"><h1 className="page-title">List Staff</h1><button className="btn btn-primary" onClick={() => window.location.href = '/staff/add'}><MdAdd /> Add Staff</button></div>
-            <div className="card"><DataTable columns={columns} data={data} loading={loading} onEdit={setEditItem} /></div>
+            <div className="page-header">
+                <h1 className="page-title">List Staff</h1>
+                <button className="btn btn-primary" onClick={() => window.location.href = '/staff/add'}><MdAdd /> Add Staff</button>
+            </div>
+            <div className="card">
+                <DataTable
+                    columns={columns}
+                    data={data}
+                    loading={loading}
+                    onEdit={setEditItem}
+                    onDelete={handleDelete}
+                />
+            </div>
         </div>
     );
 }
