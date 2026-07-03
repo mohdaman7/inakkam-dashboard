@@ -66,6 +66,97 @@
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* ─── Premium Light Mode Theme ──────────────────────────── */
+.admin-layout.light {
+  /* Backgrounds */
+  --bg-body: #f5f7fb;
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fafbff;
+  --bg-input: #f0f2f5;
+  --bg-header: #ffffff;
+  --bg-modal: #ffffff;
+
+  /* Text */
+  --text-primary: #2d3748;
+  --text-secondary: #718096;
+  --text-muted: #a0aec0;
+  --text-white: #1a202c;
+
+  /* Borders */
+  --border-color: rgba(0, 0, 0, 0.06);
+  --border-light: rgba(0, 0, 0, 0.1);
+
+  /* Gradients */
+  --gradient-card: linear-gradient(135deg, rgba(150, 16, 255, 0.04) 0%, rgba(150, 16, 255, 0.01) 100%);
+
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
+}
+
+/* Light mode specific component overrides */
+.admin-layout.light .sidebar-collapse-btn {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-secondary);
+}
+.admin-layout.light .sidebar-collapse-btn:hover {
+  background: rgba(150, 16, 255, 0.1);
+  color: var(--primary);
+}
+.admin-layout.light .sidebar-item:hover {
+  background: rgba(150, 16, 255, 0.05);
+  color: var(--primary);
+}
+.admin-layout.light .sidebar-item-parent.active-parent {
+  background: rgba(150, 16, 255, 0.05);
+  color: var(--primary);
+}
+.admin-layout.light .sidebar-submenu {
+  background: rgba(150, 16, 255, 0.02);
+}
+.admin-layout.light .sidebar-subitem:hover {
+  background: rgba(150, 16, 255, 0.05);
+  color: var(--primary);
+}
+.admin-layout.light .header-menu-btn:hover,
+.admin-layout.light .header-icon-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--text-primary);
+}
+.admin-layout.light .header-dropdown-item:hover {
+  background: rgba(150, 16, 255, 0.05);
+  color: var(--primary);
+}
+.admin-layout.light .header-dropdown-item.danger:hover {
+  background: rgba(255, 61, 113, 0.08);
+  color: var(--danger);
+}
+.admin-layout.light .form-select option {
+  background: #ffffff;
+  color: #1d1d1d;
+}
+.admin-layout.light .pagination-btn {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+}
+.admin-layout.light .toggle-slider {
+  background: #cbd5e0;
+}
+.admin-layout.light .data-table tbody tr:hover {
+  background: rgba(150, 16, 255, 0.03);
+}
+.admin-layout.light ::-webkit-scrollbar-track {
+  background: #f5f7fb;
+}
+.admin-layout.light ::-webkit-scrollbar-thumb {
+  background: rgba(150, 16, 255, 0.2);
+}
+.admin-layout.light ::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 16, 255, 0.4);
+}
+
 /* ─── Reset & Base ──────────────────────────────────────── */
 *, *::before, *::after {
   box-sizing: border-box;

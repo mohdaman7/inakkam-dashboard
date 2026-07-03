@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DataTable from '../../components/DataTable';
 import LanguageAdd from './LanguageAdd';
 import { MdAdd } from 'react-icons/md';
@@ -22,6 +23,7 @@ const columns = [
 ];
 
 export default function LanguageList() {
+    const navigate = useNavigate();
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
@@ -55,7 +57,7 @@ export default function LanguageList() {
         <div>
             <div className="page-header">
                 <h1 className="page-title">List Language</h1>
-                <button className="btn btn-primary" onClick={() => window.location.href = '/language/add'}><MdAdd /> Add Language</button>
+                <button className="btn btn-primary" onClick={() => navigate('/language/add')}><MdAdd /> Add Language</button>
             </div>
             <div className="card">
                 <DataTable

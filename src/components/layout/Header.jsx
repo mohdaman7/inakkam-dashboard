@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { MdMenu, MdDarkMode, MdLightMode, MdFullscreen, MdFullscreenExit, MdPerson, MdLogout, MdSettings } from 'react-icons/md';
 import './Header.css';
 
 export default function Header({ onMenuToggle, darkMode, onDarkModeToggle }) {
     const { admin, logout } = useAuth();
+    const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const dropdownRef = useRef(null);
@@ -49,19 +51,23 @@ export default function Header({ onMenuToggle, darkMode, onDarkModeToggle }) {
                         className="header-admin-btn"
                         onClick={() => setDropdownOpen(!dropdownOpen)}
                     >
-                        <div className="header-admin-avatar">
-                            <MdPerson />
+                        <div className="header-admin-avatar" style={{ overflow: 'hidden', padding: 0 }}>
+                            {admin?.avatar ? (
+                                <img src={admin.avatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                <MdPerson />
+                            )}
                         </div>
                     </button>
 
                     {dropdownOpen && (
                         <div className="header-dropdown">
                             <div className="header-dropdown-info">
-                                <div className="header-dropdown-name">Administrator</div>
-                                <div className="header-dropdown-role">Super Admin</div>
+                                <div className="header-dropdown-name">{admin?.name || 'Administrator'}</div>
+                                <div className="header-dropdown-role" style={{ textTransform: 'capitalize' }}>{admin?.role || 'Super Admin'}</div>
                             </div>
                             <div className="header-dropdown-divider" />
-                            <button className="header-dropdown-item">
+                            <button className="header-dropdown-item" onClick={() => { setDropdownOpen(false); navigate('/settings'); }}>
                                 <MdSettings />
                                 <span>Settings</span>
                             </button>

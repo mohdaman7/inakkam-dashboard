@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DataTable from '../../components/DataTable';
 import FaqAdd from './FaqAdd';
 import { MdAdd } from 'react-icons/md';
@@ -19,6 +20,7 @@ const columns = [
 ];
 
 export default function FaqList() {
+    const navigate = useNavigate();
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
@@ -52,7 +54,7 @@ export default function FaqList() {
         <div>
             <div className="page-header">
                 <h1 className="page-title">List FAQ</h1>
-                <button className="btn btn-primary" onClick={() => window.location.href = '/faq/add'}><MdAdd /> Add FAQ</button>
+                <button className="btn btn-primary" onClick={() => navigate('/faq/add')}><MdAdd /> Add FAQ</button>
             </div>
             <div className="card">
                 <DataTable
