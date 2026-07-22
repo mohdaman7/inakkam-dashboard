@@ -5,6 +5,7 @@ import PackageAdd from './PackageAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const DEMO = [
     { _id: '1', totalCoin: 50, amount: 4.99, status: 1 },
@@ -21,6 +22,7 @@ export default function PackageList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -31,7 +33,14 @@ export default function PackageList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete package with ${row.totalCoin} coins?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete Package',
+            message: `Are you sure you want to delete package with ${row.totalCoin} coins?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/packages/${row._id}`);
                 toast.success('Package deleted successfully!');

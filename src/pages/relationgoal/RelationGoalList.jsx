@@ -5,6 +5,7 @@ import RelationGoalAdd from './RelationGoalAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const DEMO = [
     { _id: '1', title: 'Casual Dating', subtitle: 'Just having fun', status: 1 },
@@ -27,6 +28,7 @@ export default function RelationGoalList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -37,7 +39,14 @@ export default function RelationGoalList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete Relation Goal',
+            message: `Are you sure you want to delete "${row.title}"?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/relation-goals/${row._id}`);
                 toast.success('Relation Goal deleted successfully!');
