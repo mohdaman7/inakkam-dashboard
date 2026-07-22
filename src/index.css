@@ -5,48 +5,55 @@
 
 /* ─── CSS Variables ─────────────────────────────────────── */
 :root {
-  /* Primary */
-  --primary: #9610ff;
-  --primary-light: #b44dff;
-  --primary-dark: #7a0dd6;
-  --primary-glow: rgba(150, 16, 255, 0.25);
+  /* Primary & Accent Icons — Deep Magenta Pink */
+  --primary: #C2185B;
+  --primary-light: #E91E6C;
+  --primary-dark: #AD1457;
+  --primary-glow: rgba(194, 24, 91, 0.15);
+
+  /* Secondary Actions / CTA buttons — Vibrant Coral Pink */
+  --coral: #FF6B81;
+  --coral-light: #FF8A9E;
+  --coral-dark: #E85D73;
 
   /* Backgrounds */
-  --bg-body: #0f0f1a;
-  --bg-sidebar: #151521;
-  --bg-card: #1a1a2e;
-  --bg-card-hover: #1f1f35;
-  --bg-input: #12121f;
-  --bg-header: #151521;
-  --bg-modal: #1a1a2e;
+  --bg-body: #FFF5F5;              /* Soft Rose White – Main Site Background */
+  --bg-sidebar: #C2185B;           /* Deep Magenta Pink – Sidebar & Navbar */
+  --bg-card: #FFFAF6;              /* Creamy Soft Light – Home Page, Sign-Up, & Profile Cards */
+  --bg-card-hover: #FFF0EC;
+  --bg-input: #FFF8F5;
+  --bg-header: #C2185B;            /* Deep Magenta Pink */
+  --bg-modal: #FFFFFF;
+  --bg-lavender: #F0E6FF;          /* Light Lavender – Chat Box & Video Call Window */
 
-  /* Text */
-  --text-primary: #e8e8f0;
-  --text-secondary: #8a8aa0;
-  --text-muted: #5a5a72;
-  --text-white: #ffffff;
+  /* Text Colors */
+  --text-primary: #2D2D2D;         /* Dark Charcoal – Main Body Text & User Profiles */
+  --text-secondary: #5A5A6E;
+  --text-muted: #9A9AB0;
+  --text-white: #FFFFFF;
 
-  /* Borders */
-  --border-color: rgba(255, 255, 255, 0.06);
-  --border-light: rgba(255, 255, 255, 0.1);
+  /* Borders & Highlights — Soft Pastel Lavender */
+  --border-color: #C8B6E2;         /* Soft Pastel Lavender – Card Borders, Filter Options */
+  --border-light: #E8DFFF;
 
-  /* Status */
-  --success: #00d68f;
-  --danger: #ff3d71;
-  --warning: #ffaa00;
-  --info: #0095ff;
+  /* Status & Accents */
+  --success: #2ECC71;
+  --danger: #E74C3C;
+  --warning: #FFAB76;              /* Warm Peach / Orange – Status Badges */
+  --info: #3498DB;
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #9610ff 0%, #6b0fd0 100%);
-  --gradient-success: linear-gradient(135deg, #00d68f 0%, #00b377 100%);
-  --gradient-danger: linear-gradient(135deg, #ff3d71 0%, #db2c66 100%);
-  --gradient-card: linear-gradient(135deg, rgba(150, 16, 255, 0.08) 0%, rgba(150, 16, 255, 0.02) 100%);
+  --gradient-primary: linear-gradient(135deg, #FF6B81 0%, #FF8A9E 100%); /* CTA Buttons use Vibrant Coral Pink */
+  --gradient-sidebar: linear-gradient(135deg, #C2185B 0%, #AD1457 100%);
+  --gradient-success: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
+  --gradient-danger: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
+  --gradient-card: linear-gradient(135deg, rgba(194, 24, 91, 0.03) 0%, rgba(255, 107, 129, 0.02) 100%);
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.2);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.3);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-primary: 0 4px 20px rgba(150, 16, 255, 0.3);
+  --shadow-sm: 0 2px 8px rgba(194, 24, 91, 0.04);
+  --shadow-md: 0 4px 16px rgba(194, 24, 91, 0.06);
+  --shadow-lg: 0 8px 32px rgba(194, 24, 91, 0.08);
+  --shadow-primary: 0 4px 20px rgba(255, 107, 129, 0.2);
 
   /* Layout */
   --sidebar-width: 260px;
@@ -66,96 +73,7 @@
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ─── Premium Light Mode Theme ──────────────────────────── */
-.admin-layout.light {
-  /* Backgrounds */
-  --bg-body: #f5f7fb;
-  --bg-sidebar: #ffffff;
-  --bg-card: #ffffff;
-  --bg-card-hover: #fafbff;
-  --bg-input: #f0f2f5;
-  --bg-header: #ffffff;
-  --bg-modal: #ffffff;
 
-  /* Text */
-  --text-primary: #2d3748;
-  --text-secondary: #718096;
-  --text-muted: #a0aec0;
-  --text-white: #1a202c;
-
-  /* Borders */
-  --border-color: rgba(0, 0, 0, 0.06);
-  --border-light: rgba(0, 0, 0, 0.1);
-
-  /* Gradients */
-  --gradient-card: linear-gradient(135deg, rgba(150, 16, 255, 0.04) 0%, rgba(150, 16, 255, 0.01) 100%);
-
-  /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.05);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.08);
-  --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12);
-}
-
-/* Light mode specific component overrides */
-.admin-layout.light .sidebar-collapse-btn {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text-secondary);
-}
-.admin-layout.light .sidebar-collapse-btn:hover {
-  background: rgba(150, 16, 255, 0.1);
-  color: var(--primary);
-}
-.admin-layout.light .sidebar-item:hover {
-  background: rgba(150, 16, 255, 0.05);
-  color: var(--primary);
-}
-.admin-layout.light .sidebar-item-parent.active-parent {
-  background: rgba(150, 16, 255, 0.05);
-  color: var(--primary);
-}
-.admin-layout.light .sidebar-submenu {
-  background: rgba(150, 16, 255, 0.02);
-}
-.admin-layout.light .sidebar-subitem:hover {
-  background: rgba(150, 16, 255, 0.05);
-  color: var(--primary);
-}
-.admin-layout.light .header-menu-btn:hover,
-.admin-layout.light .header-icon-btn:hover {
-  background: rgba(0, 0, 0, 0.04);
-  color: var(--text-primary);
-}
-.admin-layout.light .header-dropdown-item:hover {
-  background: rgba(150, 16, 255, 0.05);
-  color: var(--primary);
-}
-.admin-layout.light .header-dropdown-item.danger:hover {
-  background: rgba(255, 61, 113, 0.08);
-  color: var(--danger);
-}
-.admin-layout.light .form-select option {
-  background: #ffffff;
-  color: #1d1d1d;
-}
-.admin-layout.light .pagination-btn {
-  background: #ffffff;
-  border-color: rgba(0, 0, 0, 0.08);
-}
-.admin-layout.light .toggle-slider {
-  background: #cbd5e0;
-}
-.admin-layout.light .data-table tbody tr:hover {
-  background: rgba(150, 16, 255, 0.03);
-}
-.admin-layout.light ::-webkit-scrollbar-track {
-  background: #f5f7fb;
-}
-.admin-layout.light ::-webkit-scrollbar-thumb {
-  background: rgba(150, 16, 255, 0.2);
-}
-.admin-layout.light ::-webkit-scrollbar-thumb:hover {
-  background: rgba(150, 16, 255, 0.4);
-}
 
 /* ─── Reset & Base ──────────────────────────────────────── */
 *, *::before, *::after {
@@ -621,7 +539,7 @@ ul, ol {
 .page-title {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-white);
+  color: var(--text-primary);
   letter-spacing: -0.01em;
 }
 
@@ -679,7 +597,7 @@ ul, ol {
 .stat-info .stat-value {
   font-size: 2rem;
   font-weight: 800;
-  color: var(--text-white);
+  color: var(--text-primary);
   line-height: 1;
 }
 

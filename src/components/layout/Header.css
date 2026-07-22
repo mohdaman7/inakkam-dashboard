@@ -26,15 +26,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     background: transparent;
     font-size: 1.4rem;
     transition: all var(--transition-fast);
 }
 
 .header-menu-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
 }
 
 .header-right {
@@ -50,14 +50,14 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--text-secondary);
+    color: rgba(255, 255, 255, 0.85);
     font-size: 1.2rem;
     transition: all var(--transition-fast);
 }
 
 .header-icon-btn:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
 }
 
 .header-admin {
@@ -106,7 +106,7 @@
 .header-dropdown-name {
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--text-white);
+    color: var(--text-primary);
 }
 
 .header-dropdown-role {

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { MdMenu, MdDarkMode, MdLightMode, MdFullscreen, MdFullscreenExit, MdPerson, MdLogout, MdSettings } from 'react-icons/md';
 import './Header.css';
 
-export default function Header({ onMenuToggle, darkMode, onDarkModeToggle }) {
+export default function Header({ onMenuToggle, darkMode, onDarkModeToggle, collapsed }) {
     const { admin, logout } = useAuth();
     const navigate = useNavigate();
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -32,7 +32,7 @@ export default function Header({ onMenuToggle, darkMode, onDarkModeToggle }) {
     };
 
     return (
-        <header className="header">
+        <header className={`header ${collapsed ? 'collapsed' : ''}`}>
             <button className="header-menu-btn" onClick={onMenuToggle}>
                 <MdMenu />
             </button>
