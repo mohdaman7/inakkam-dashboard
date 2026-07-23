@@ -5,6 +5,7 @@ import PlanAdd from './PlanAdd';
 import { MdAdd, MdCheck, MdClose } from 'react-icons/md';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const DEMO = [
     { _id: '1', title: 'Inakkam Boost', amount: 14.99, dayLimit: 30, filterInclude: true, directChat: true, chat: true, likeMenu: false, audioVideo: false, status: 1 },
@@ -28,6 +29,7 @@ export default function PlanList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -38,7 +40,14 @@ export default function PlanList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete plan "${row.title}"?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete Plan',
+            message: `Are you sure you want to delete plan "${row.title}"?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/plans/${row._id}`);
                 toast.success('Plan deleted successfully!');

@@ -5,6 +5,7 @@ import LanguageAdd from './LanguageAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const DEMO = [
     { _id: '1', title: 'English', image: '', status: 1 }, { _id: '2', title: 'Hindi', image: '', status: 1 },
@@ -27,6 +28,7 @@ export default function LanguageList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -37,7 +39,14 @@ export default function LanguageList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete Language',
+            message: `Are you sure you want to delete "${row.title}"?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/languages/${row._id}`);
                 toast.success('Language deleted successfully!');

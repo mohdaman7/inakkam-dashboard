@@ -5,6 +5,7 @@ import InterestAdd from './InterestAdd';
 import { MdAdd } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
+import { useConfirm } from '../../context/ConfirmContext';
 
 // Demo data
 const DEMO = [
@@ -33,6 +34,7 @@ export default function InterestList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -43,7 +45,14 @@ export default function InterestList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete Interest',
+            message: `Are you sure you want to delete "${row.title}"?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/interests/${row._id}`);
                 toast.success('Interest deleted successfully!');

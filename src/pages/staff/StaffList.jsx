@@ -5,6 +5,7 @@ import StaffAdd from './StaffAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const DEMO = [
     { _id: '1', email: 'staff1@inakkam.com', password: '••••••••', status: 1 },
@@ -21,6 +22,7 @@ export default function StaffList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -31,7 +33,14 @@ export default function StaffList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete staff account "${row.email}"?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete Staff',
+            message: `Are you sure you want to delete staff account "${row.email}"?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/staff/${row._id}`);
                 toast.success('Staff deleted successfully!');

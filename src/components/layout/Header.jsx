@@ -8,6 +8,7 @@ import {
 import { FaHeart } from 'react-icons/fa';
 import './Header.css';
 
+<<<<<<< HEAD
 const pageTitleMap = {
     '/': 'Dashboard Overview',
     '/user-list': 'User List',
@@ -41,6 +42,9 @@ const pageTitleMap = {
 };
 
 export default function Header({ onMenuToggle, onToggleCollapse, darkMode, onDarkModeToggle, collapsed }) {
+=======
+export default function Header({ onMenuToggle, darkMode, onDarkModeToggle, collapsed }) {
+>>>>>>> 7dc08292736b3a10baca73c3c20d6f225d9c9b1b
     const { admin, logout } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
@@ -82,6 +86,7 @@ export default function Header({ onMenuToggle, onToggleCollapse, darkMode, onDar
 
     return (
         <header className={`header ${collapsed ? 'collapsed' : ''}`}>
+<<<<<<< HEAD
             <div className="header-left">
                 <button
                     className="header-menu-btn"
@@ -108,6 +113,11 @@ export default function Header({ onMenuToggle, onToggleCollapse, darkMode, onDar
                     <span className="header-page-title">{currentTitle}</span>
                 </div>
             </div>
+=======
+            <button className="header-menu-btn" onClick={onMenuToggle}>
+                <MdMenu />
+            </button>
+>>>>>>> 7dc08292736b3a10baca73c3c20d6f225d9c9b1b
 
             <div className="header-right">
                 <button

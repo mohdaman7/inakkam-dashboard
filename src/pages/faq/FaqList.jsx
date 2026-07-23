@@ -5,6 +5,7 @@ import FaqAdd from './FaqAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 const DEMO = Array.from({ length: 10 }, (_, i) => ({
     _id: String(i + 1),
@@ -24,6 +25,7 @@ export default function FaqList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -34,7 +36,14 @@ export default function FaqList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete this FAQ?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete FAQ',
+            message: `Are you sure you want to delete this FAQ?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/faqs/${row._id}`);
                 toast.success('FAQ deleted successfully!');

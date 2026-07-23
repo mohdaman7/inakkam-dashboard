@@ -6,7 +6,7 @@ import Header from './Header';
 export default function AdminLayout() {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
-    const [darkMode, setDarkMode] = useState(true);
+    const [darkMode, setDarkMode] = useState(false);
 
     const toggleSidebar = () => setCollapsed(p => !p);
     const toggleMobile = () => setMobileOpen(p => !p);

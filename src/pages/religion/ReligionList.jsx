@@ -4,6 +4,7 @@ import DataTable from '../../components/DataTable';
 import ReligionAdd from './ReligionAdd';
 import { MdAdd } from 'react-icons/md';
 import api from '../../utils/api';
+import { useConfirm } from '../../context/ConfirmContext';
 import toast from 'react-hot-toast';
 
 const DEMO = [
@@ -25,6 +26,7 @@ export default function ReligionList() {
     const [data, setData] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [editItem, setEditItem] = useState(null);
+    const confirm = useConfirm();
 
     const fetchData = async () => {
         setLoading(true);
@@ -35,7 +37,14 @@ export default function ReligionList() {
     };
 
     const handleDelete = async (row) => {
-        if (window.confirm(`Are you sure you want to delete "${row.title}"?`)) {
+        const isConfirmed = await confirm({
+            title: 'Delete Religion',
+            message: `Are you sure you want to delete "${row.title}"?`,
+            confirmText: 'Delete',
+            cancelText: 'Cancel',
+            type: 'danger'
+        });
+        if (isConfirmed) {
             try {
                 await api.delete(`/religions/${row._id}`);
                 toast.success('Religion deleted successfully!');
