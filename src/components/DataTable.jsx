@@ -3,7 +3,7 @@ import { MdSearch, MdEdit, MdDelete, MdChevronLeft, MdChevronRight } from 'react
 
 export default function DataTable({
     columns, data, loading, onEdit, onDelete,
-    actions, pageKey = 'table'
+    actions, pageKey = 'table', hideSearch = false
 }) {
     const [search, setSearch] = useState('');
     const [perPage, setPerPage] = useState(10);
@@ -31,14 +31,16 @@ export default function DataTable({
                     </select>
                     entries
                 </div>
-                <div className="table-search">
-                    <MdSearch className="search-icon" />
-                    <input
-                        placeholder="Search..."
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                    />
-                </div>
+                {!hideSearch && (
+                    <div className="table-search">
+                        <MdSearch className="search-icon" />
+                        <input
+                            placeholder="Search..."
+                            value={search}
+                            onChange={e => setSearch(e.target.value)}
+                        />
+                    </div>
+                )}
             </div>
 
             <div className="data-table-wrapper">
