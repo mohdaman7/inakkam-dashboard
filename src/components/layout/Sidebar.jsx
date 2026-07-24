@@ -7,7 +7,7 @@ import {
     MdList, MdNotifications, MdAdd, MdChevronRight, MdChevronLeft,
     MdClose, MdMenu
 } from 'react-icons/md';
-import { FaHeart } from 'react-icons/fa';
+import inakkamLogo from '../../assets/inakkam-logo-icon.png';
 import './Sidebar.css';
 
 const menuItems = [
@@ -112,7 +112,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                 {/* Logo */}
                 <div className="sidebar-logo">
                     <div className="sidebar-logo-icon">
-                        <FaHeart />
+                        <img src={inakkamLogo} alt="Inakkam" className="sidebar-logo-img" />
                     </div>
                     {!collapsed && (
                         <div className="sidebar-logo-text">

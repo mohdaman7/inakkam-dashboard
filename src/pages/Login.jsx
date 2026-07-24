@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { FaHeart } from 'react-icons/fa';
+import inakkamLogoFull from '../assets/inakkam-logo-full.png';
 import { MdEmail, MdLock, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import './Login.css';
@@ -57,10 +57,7 @@ export default function LoginPage() {
             <div className="login-container">
                 {/* Logo */}
                 <div className="login-logo">
-                    <div className="login-logo-icon">
-                        <FaHeart />
-                    </div>
-                    <h1 className="login-logo-title">Inakkam</h1>
+                    <img src={inakkamLogoFull} alt="Inakkam" className="login-logo-img" />
                     <p className="login-logo-sub">Admin Control Panel</p>
                 </div>
 
