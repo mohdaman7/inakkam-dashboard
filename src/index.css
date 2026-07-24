@@ -4,56 +4,64 @@
    ═══════════════════════════════════════════════════════════ */
 
 /* ─── CSS Variables ─────────────────────────────────────── */
+/* ─── CSS Variables ─────────────────────────────────────── */
 :root {
-  /* Primary & Accent Icons — Deep Magenta Pink */
-  --primary: #C2185B;
-  --primary-light: #E91E6C;
-  --primary-dark: #AD1457;
-  --primary-glow: rgba(194, 24, 91, 0.15);
+  /* Requested Color Pattern Palette: #ffe5ec - #ffc2d1 - #ffb3c6 - #ff8fab - #fb6f92 */
+  --rose-100: #ffe5ec; /* Lightest soft blush tint */
+  --rose-200: #ffc2d1; /* Soft rose background/tint */
+  --rose-300: #ffb3c6; /* Pastel rose accent & borders */
+  --rose-400: #ff8fab; /* Vibrant rose pink */
+  --rose-500: #fb6f92; /* Deep hot pink primary brand */
 
-  /* Secondary Actions / CTA buttons — Vibrant Coral Pink */
-  --coral: #FF6B81;
-  --coral-light: #FF8A9E;
-  --coral-dark: #E85D73;
+  /* Primary Brand Tokens */
+  --primary: var(--rose-500);          /* #fb6f92 */
+  --primary-light: var(--rose-400);    /* #ff8fab */
+  --primary-dark: #d84b70;             /* Deep rose pink */
+  --primary-glow: rgba(251, 111, 146, 0.25);
 
-  /* Backgrounds */
-  --bg-body: #FFF5F5;              /* Soft Rose White – Main Site Background */
-  --bg-sidebar: #C2185B;           /* Deep Magenta Pink – Sidebar & Navbar */
-  --bg-card: #FFFAF6;              /* Creamy Soft Light – Home Page, Sign-Up, & Profile Cards */
-  --bg-card-hover: #FFF0EC;
-  --bg-input: #FFF8F5;
-  --bg-header: #C2185B;            /* Deep Magenta Pink */
-  --bg-modal: #FFFFFF;
-  --bg-lavender: #F0E6FF;          /* Light Lavender – Chat Box & Video Call Window */
+  /* Coral Accents */
+  --coral: var(--rose-400);
+  --coral-light: var(--rose-300);
+  --coral-dark: var(--rose-500);
 
-  /* Text Colors */
-  --text-primary: #2D2D2D;         /* Dark Charcoal – Main Body Text & User Profiles */
-  --text-secondary: #5A5A6E;
-  --text-muted: #9A9AB0;
-  --text-white: #FFFFFF;
+  /* Dark Theme Backgrounds */
+  --bg-body: #0d0b14;
+  --bg-sidebar: #13101c;
+  --bg-card: #191424;
+  --bg-card-hover: #221b30;
+  --bg-input: #14101e;
+  --bg-header: #13101c;
+  --bg-modal: #191424;
+  --bg-lavender: var(--rose-100);
 
-  /* Borders & Highlights — Soft Pastel Lavender */
-  --border-color: #C8B6E2;         /* Soft Pastel Lavender – Card Borders, Filter Options */
-  --border-light: #E8DFFF;
+  /* Dark Theme Text Colors */
+  --text-primary: #ffffff;
+  --text-secondary: var(--rose-300);   /* #ffb3c6 */
+  --text-muted: #a38996;
+  --text-white: #ffffff;
 
-  /* Status & Accents */
-  --success: #2ECC71;
-  --danger: #E74C3C;
-  --warning: #FFAB76;              /* Warm Peach / Orange – Status Badges */
-  --info: #3498DB;
+  /* Dark Theme Borders */
+  --border-color: rgba(255, 179, 198, 0.15); /* Translucent #ffb3c6 */
+  --border-light: rgba(255, 179, 198, 0.28);
+
+  /* Status Accents */
+  --success: #00d68f;
+  --danger: #ff3d71;
+  --warning: #ffaa00;
+  --info: #0095ff;
 
   /* Gradients */
-  --gradient-primary: linear-gradient(135deg, #FF6B81 0%, #FF8A9E 100%); /* CTA Buttons use Vibrant Coral Pink */
-  --gradient-sidebar: linear-gradient(135deg, #C2185B 0%, #AD1457 100%);
-  --gradient-success: linear-gradient(135deg, #2ECC71 0%, #27AE60 100%);
-  --gradient-danger: linear-gradient(135deg, #E74C3C 0%, #C0392B 100%);
-  --gradient-card: linear-gradient(135deg, rgba(194, 24, 91, 0.03) 0%, rgba(255, 107, 129, 0.02) 100%);
+  --gradient-primary: linear-gradient(135deg, #fb6f92 0%, #ff8fab 100%);
+  --gradient-sidebar: linear-gradient(135deg, #13101c 0%, #0d0b14 100%);
+  --gradient-success: linear-gradient(135deg, #00d68f 0%, #00b377 100%);
+  --gradient-danger: linear-gradient(135deg, #ff3d71 0%, #db2c66 100%);
+  --gradient-card: linear-gradient(135deg, rgba(251, 111, 146, 0.1) 0%, rgba(255, 143, 171, 0.02) 100%);
 
   /* Shadows */
-  --shadow-sm: 0 2px 8px rgba(194, 24, 91, 0.04);
-  --shadow-md: 0 4px 16px rgba(194, 24, 91, 0.06);
-  --shadow-lg: 0 8px 32px rgba(194, 24, 91, 0.08);
-  --shadow-primary: 0 4px 20px rgba(255, 107, 129, 0.2);
+  --shadow-sm: 0 2px 8px rgba(251, 111, 146, 0.08);
+  --shadow-md: 0 4px 16px rgba(251, 111, 146, 0.12);
+  --shadow-lg: 0 8px 32px rgba(251, 111, 146, 0.18);
+  --shadow-primary: 0 4px 20px rgba(251, 111, 146, 0.35);
 
   /* Layout */
   --sidebar-width: 260px;
@@ -73,7 +81,209 @@
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+/* ─── Light Mode Theme (Rose Palette: #ffe5ec, #ffc2d1, #ffb3c6, #ff8fab, #fb6f92) ─── */
+.admin-layout.light {
+  --bg-body: #fff4f6;                  /* Super clean soft blush white site background */
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fff0f3;            /* Soft rose card hover */
+  --bg-input: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.92); /* Glassmorphic clean white topbar header */
+  --bg-modal: #ffffff;
 
+  --text-primary: #2b111c;             /* Rich deep charcoal pink */
+  --text-secondary: #d84b70;
+  --text-muted: #9e6475;
+  --text-white: #ffffff;
+
+  --border-color: #ffb3c6;             /* Pastel rose border */
+  --border-light: #ffc2d1;
+
+  --gradient-card: linear-gradient(135deg, rgba(251, 111, 146, 0.05) 0%, rgba(255, 229, 236, 0.3) 100%);
+  --shadow-sm: 0 4px 12px rgba(251, 111, 146, 0.06);
+  --shadow-md: 0 8px 24px rgba(251, 111, 146, 0.08);
+  --shadow-lg: 0 12px 36px rgba(251, 111, 146, 0.12);
+}
+
+/* Light mode component specific overrides */
+.admin-layout.light .header {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border-color);
+}
+.admin-layout.light .header-page-title {
+  color: #2b111c;
+}
+.admin-layout.light .header-menu-btn,
+.admin-layout.light .header-icon-btn {
+  background: rgba(251, 111, 146, 0.06);
+  color: #d84b70;
+  border: 1px solid rgba(255, 179, 198, 0.3);
+}
+.admin-layout.light .header-menu-btn:hover,
+.admin-layout.light .header-icon-btn:hover {
+  background: rgba(251, 111, 146, 0.12);
+  color: #fb6f92;
+}
+.admin-layout.light .header-collapsed-brand {
+  background: rgba(251, 111, 146, 0.08);
+  border-color: #ffb3c6;
+}
+.admin-layout.light .header-brand-name {
+  color: #2b111c;
+}
+.admin-layout.light .header-admin-btn {
+  background: #fff5f7;
+  border-color: #ffb3c6;
+}
+.admin-layout.light .header-admin-name {
+  color: #2b111c;
+}
+.admin-layout.light .header-admin-role {
+  color: #fb6f92;
+}
+
+.admin-layout.light .sidebar {
+  background: #ffffff;
+  border-right: 1px solid var(--border-color);
+}
+.admin-layout.light .sidebar-logo-name {
+  color: #2b111c;
+}
+.admin-layout.light .sidebar-logo {
+  border-bottom: 1px solid var(--border-color);
+}
+.admin-layout.light .sidebar-item {
+  color: #7a5463;
+}
+.admin-layout.light .sidebar-item:hover {
+  background: rgba(251, 111, 146, 0.08);
+  color: #fb6f92;
+}
+.admin-layout.light .sidebar-item.active {
+  color: #fb6f92;
+  background: linear-gradient(135deg, rgba(251, 111, 146, 0.12) 0%, rgba(255, 229, 236, 0.4) 100%);
+  border-left-color: #fb6f92;
+}
+.admin-layout.light .sidebar-item-parent.active-parent {
+  background: rgba(251, 111, 146, 0.08);
+  color: #fb6f92;
+}
+.admin-layout.light .sidebar-submenu {
+  background: rgba(255, 229, 236, 0.4);
+  border-left: 1px solid #ffb3c6;
+}
+.admin-layout.light .sidebar-subitem {
+  color: #7a5463;
+}
+.admin-layout.light .sidebar-subitem:hover {
+  background: rgba(251, 111, 146, 0.08);
+  color: #fb6f92;
+}
+.admin-layout.light .sidebar-subitem.active {
+  color: #fb6f92;
+  background: rgba(251, 111, 146, 0.12);
+}
+
+.admin-layout.light .card {
+  background: #ffffff;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 16px rgba(251, 111, 146, 0.06);
+}
+.admin-layout.light .card:hover {
+  border-color: #ff8fab;
+  box-shadow: 0 8px 24px rgba(251, 111, 146, 0.12);
+}
+
+.admin-layout.light .data-table {
+  color: #2b111c;
+}
+.admin-layout.light .data-table thead th {
+  background: #fff0f4;
+  color: #2b111c;
+  border-bottom: 2px solid #ffb3c6;
+  font-weight: 700;
+}
+.admin-layout.light .data-table tbody td {
+  border-bottom: 1px solid rgba(255, 179, 198, 0.3);
+}
+.admin-layout.light .data-table tbody tr:hover {
+  background: rgba(255, 229, 236, 0.6);
+}
+
+.admin-layout.light .form-input,
+.admin-layout.light .form-select,
+.admin-layout.light .form-textarea {
+  background: #ffffff;
+  border: 1px solid #ffb3c6;
+  color: #2b111c;
+}
+.admin-layout.light .form-input:focus,
+.admin-layout.light .form-select:focus,
+.admin-layout.light .form-textarea:focus {
+  border-color: #fb6f92;
+  box-shadow: 0 0 0 3px rgba(251, 111, 146, 0.2);
+}
+.admin-layout.light .form-select option {
+  background: #ffffff;
+  color: #2b111c;
+}
+
+.admin-layout.light .pagination-btn {
+  background: #ffffff;
+  border-color: #ffb3c6;
+  color: #fb6f92;
+}
+.admin-layout.light .pagination-btn:hover {
+  background: #ffe5ec;
+}
+.admin-layout.light .pagination-btn.active {
+  background: #fb6f92;
+  color: #ffffff;
+  border-color: #fb6f92;
+  box-shadow: 0 4px 12px rgba(251, 111, 146, 0.3);
+}
+
+.admin-layout.light .modal-overlay .card {
+  background: #ffffff;
+  border: 1px solid #ffb3c6;
+  box-shadow: 0 16px 48px rgba(251, 111, 146, 0.2);
+}
+
+.admin-layout.light .page-title,
+.admin-layout.light h1,
+.admin-layout.light h2,
+.admin-layout.light h3,
+.admin-layout.light h4,
+.admin-layout.light h5,
+.admin-layout.light h6 {
+  color: #2b111c;
+}
+
+.admin-layout.light .form-label,
+.admin-layout.light label {
+  color: #5c3041;
+}
+
+.admin-layout.light .upload-box,
+.admin-layout.light .image-upload-box,
+.admin-layout.light [class*="upload"],
+.admin-layout.light [class*="dropzone"] {
+  background: #fff8fa;
+  border-color: #ffb3c6;
+  color: #d84b70;
+}
+
+.admin-layout.light ::-webkit-scrollbar-track {
+  background: #ffe5ec;
+}
+.admin-layout.light ::-webkit-scrollbar-thumb {
+  background: #ffb3c6;
+  border-radius: 4px;
+}
+.admin-layout.light ::-webkit-scrollbar-thumb:hover {
+  background: #ff8fab;
+}
 
 /* ─── Reset & Base ──────────────────────────────────────── */
 *, *::before, *::after {
@@ -149,6 +359,8 @@ ul, ol {
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  background: var(--bg-body);
+  color: var(--text-primary);
 }
 
 .main-content {
@@ -158,6 +370,7 @@ ul, ol {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: var(--bg-body);
 }
 
 .main-content.collapsed {
@@ -168,6 +381,7 @@ ul, ol {
   padding: 24px;
   flex: 1;
   margin-top: var(--header-height);
+  background: var(--bg-body);
 }
 
 /* ─── Cards ─────────────────────────────────────────────── */
@@ -286,17 +500,34 @@ ul, ol {
   min-height: 100px;
 }
 
-.form-select {
+.form-select, select {
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%238a8aa0' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' fill='%23b44dff' viewBox='0 0 16 16'%3E%3Cpath d='M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 16px center;
-  padding-right: 40px;
+  background-position: right 14px center;
+  background-size: 12px;
+  padding-right: 36px;
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition-fast);
 }
 
-.form-select option {
-  background: var(--bg-card);
-  color: var(--text-primary);
+.form-select:hover, select:hover {
+  border-color: var(--primary-light);
+  background-color: rgba(150, 16, 255, 0.04);
+}
+
+.form-select:focus, select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-glow);
+  outline: none;
+}
+
+.form-select option, select option {
+  background: #181828;
+  color: #ffffff;
+  padding: 10px;
 }
 
 /* ─── Toggle Switch ─────────────────────────────────────── */

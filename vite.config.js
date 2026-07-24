@@ -6,10 +6,31 @@ export default defineConfig({
     server: {
         port: 7001,
         proxy: {
+            // '/api': {
+            //     target: 'http://localhost:7000',
+            //     changeOrigin: true,
+            // },
+            // '/uploads': {
+            //     target: 'http://localhost:7000',
+            //     changeOrigin: true,
+            // },
+            // '/socket.io': {
+            //     target: 'http://localhost:7000',
+            //     changeOrigin: true,
+            //     ws: true,
+            // },
             '/api': {
-                // target: 'http://localhost:7000',
                 target: 'http://82.29.165.57:7000',
                 changeOrigin: true,
+            },
+            '/uploads': {
+                target: 'http://82.29.165.57:7000',
+                changeOrigin: true,
+            },
+            '/socket.io': {
+                target: 'http://82.29.165.57:7000',
+                changeOrigin: true,
+                ws: true,
             },
         },
     },

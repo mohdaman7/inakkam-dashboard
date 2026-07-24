@@ -4,14 +4,15 @@ import {
     MdDashboard, MdOutlineAutoAwesome, MdLanguage, MdBook, MdCardGiftcard,
     MdFavorite, MdQuestionAnswer, MdStar, MdLocalOffer, MdPeople,
     MdPayment, MdPersonAdd, MdReport, MdPages, MdAccountBalanceWallet,
-    MdList, MdNotifications, MdAdd, MdChevronRight, MdChevronLeft,
-    MdClose, MdMenu
+    MdList, MdNotifications, MdAdd, MdVerifiedUser, MdSettings, MdChevronRight
 } from 'react-icons/md';
 import inakkamLogo from '../../assets/inakkam-logo-icon.png';
 import './Sidebar.css';
 
 const menuItems = [
     { label: 'Dashboard', icon: <MdDashboard />, path: '/' },
+    { label: 'KYC Verification', icon: <MdVerifiedUser />, path: '/verification-list' },
+    { label: 'User List', icon: <MdPeople />, path: '/user-list' },
     {
         label: 'Interest', icon: <MdOutlineAutoAwesome />,
         children: [
@@ -76,6 +77,7 @@ const menuItems = [
         ]
     },
     { label: 'Payment List', icon: <MdPayment />, path: '/payment-list' },
+    { label: 'Payout List', icon: <MdAccountBalanceWallet />, path: '/payout-list' },
     { label: 'Fake User Generator', icon: <MdPersonAdd />, path: '/fake-user-generator' },
     { label: 'Report List', icon: <MdReport />, path: '/report-list' },
     {
@@ -85,9 +87,8 @@ const menuItems = [
             { label: 'List Page', icon: <MdList />, path: '/page/list' },
         ]
     },
-    { label: 'Payout List', icon: <MdAccountBalanceWallet />, path: '/payout-list' },
-    { label: 'User List', icon: <MdPeople />, path: '/user-list' },
     { label: 'Push Notification', icon: <MdNotifications />, path: '/push-notification' },
+    { label: 'Settings', icon: <MdSettings />, path: '/settings' },
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
@@ -95,6 +96,9 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
     const location = useLocation();
 
     const toggleMenu = (label) => {
+        if (collapsed && onToggle) {
+            onToggle(); // expand sidebar if collapsed
+        }
         setOpenMenus(prev => ({ ...prev, [label]: !prev[label] }));
     };
 
@@ -109,7 +113,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
             )}
 
             <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
-                {/* Logo */}
+                {/* Logo Section */}
                 <div className="sidebar-logo">
                     <div className="sidebar-logo-icon">
                         <img src={inakkamLogo} alt="Inakkam" className="sidebar-logo-img" />
@@ -120,12 +124,9 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                             <span className="sidebar-logo-sub">Admin Panel</span>
                         </div>
                     )}
-                    <button className="sidebar-collapse-btn" onClick={onToggle}>
-                        {collapsed ? <MdChevronRight /> : <MdChevronLeft />}
-                    </button>
                 </div>
 
-                {/* Nav */}
+                {/* Nav Menu */}
                 <nav className="sidebar-nav">
                     {menuItems.map((item) => {
                         if (item.children) {

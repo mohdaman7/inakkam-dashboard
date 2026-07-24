@@ -22,6 +22,7 @@ export default function AdminLayout() {
             <div className={`main-content ${collapsed ? 'collapsed' : ''}`}>
                 <Header
                     onMenuToggle={toggleMobile}
+                    onToggleCollapse={toggleSidebar}
                     darkMode={darkMode}
                     onDarkModeToggle={() => setDarkMode(p => !p)}
                     collapsed={collapsed}

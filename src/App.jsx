@@ -29,6 +29,7 @@ import PageList from './pages/pages/PageList';
 import PayoutList from './pages/PayoutList';
 import UserList from './pages/UserList';
 import PushNotification from './pages/PushNotification';
+import VerificationList from './pages/VerificationList';
 import ProfileSettings from './pages/ProfileSettings';
 
 function ProtectedRoute({ children }) {
@@ -75,6 +76,7 @@ export default function App() {
         <Route path="page/list" element={<PageList />} />
         <Route path="payout-list" element={<PayoutList />} />
         <Route path="user-list" element={<UserList />} />
+        <Route path="verification-list" element={<VerificationList />} />
         <Route path="push-notification" element={<PushNotification />} />
         <Route path="settings" element={<ProfileSettings />} />
       </Route>

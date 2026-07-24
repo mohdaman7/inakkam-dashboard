@@ -28,13 +28,23 @@ export default function PayoutList() {
     const [loading, setLoading] = useState(false);
     useEffect(() => { api.get('/payouts').then(res => { if (res.data?.payouts?.length) setData(res.data.payouts); }).catch(() => { }); }, []);
 
+    const handleProcessPayout = async (row) => {
+        try {
+            await api.patch(`/payouts/${row._id}/process`);
+            toast.success(`Payout processed for ${row.userName}`);
+            setData(prev => prev.map(p => p._id === row._id ? { ...p, status: 'Completed' } : p));
+        } catch (err) {
+            toast.error(err.response?.data?.message || 'Failed to process payout');
+        }
+    };
+
     const handleAction = (row) => (
         row.status === 'Completed' ? (
             <span style={{ color: 'var(--success)', fontSize: '0.8rem', fontWeight: 600 }}>Completed</span>
         ) : (
             <button
                 className="btn btn-danger btn-sm"
-                onClick={() => { toast.success(`Payout processed for ${row.userName}`); setData(prev => prev.map(p => p._id === row._id ? { ...p, status: 'Completed' } : p)); }}
+                onClick={() => handleProcessPayout(row)}
             >
                 <MdAccountBalanceWallet /> Make A Payout
             </button>
