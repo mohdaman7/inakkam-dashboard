@@ -63,7 +63,7 @@ export default function Dashboard() {
 }
 
 function StatCard({ label, value, icon, color, format }) {
-    const displayValue = format === 'money' ? `${(value || 0).toLocaleString()}$` : (value ?? 0).toLocaleString();
+    const displayValue = format === 'money' ? `₹${(value || 0).toLocaleString()}` : (value ?? 0).toLocaleString();
 
     return (
         <div className="stat-card">

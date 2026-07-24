@@ -15,7 +15,7 @@ const DEMO = [
 const Tick = ({ v }) => v ? <MdCheck style={{ color: 'var(--success)' }} /> : <MdClose style={{ color: 'var(--danger)' }} />;
 const columns = [
     { key: 'title', label: 'Plan Title' },
-    { key: 'amount', label: 'Amount', render: (v) => `$${v}` },
+    { key: 'amount', label: 'Amount', render: (v) => `₹${v}` },
     { key: 'dayLimit', label: 'Day Limit' },
     { key: 'filterInclude', label: 'Filter ?', render: (v) => <Tick v={v} /> },
     { key: 'directChat', label: 'Direct Chat ?', render: (v) => <Tick v={v} /> },

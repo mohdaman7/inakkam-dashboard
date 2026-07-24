@@ -33,7 +33,7 @@ export default function PlanAdd({ editData, onSaved }) {
                 <form onSubmit={handleSubmit}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                         <div className="form-group"><label className="form-label">Plan Title</label><input className="form-input" placeholder="Plan title" value={form.title} onChange={e => set('title')(e.target.value)} required /></div>
-                        <div className="form-group"><label className="form-label">Plan Amount ($)</label><input className="form-input" type="number" step="0.01" placeholder="0.00" value={form.amount} onChange={e => set('amount')(e.target.value)} required /></div>
+                        <div className="form-group"><label className="form-label">Plan Amount (₹)</label><input className="form-input" type="number" step="0.01" placeholder="0.00" value={form.amount} onChange={e => set('amount')(e.target.value)} required /></div>
                         <div className="form-group"><label className="form-label">Day Limit</label><input className="form-input" type="number" placeholder="Days" value={form.dayLimit} onChange={e => set('dayLimit')(e.target.value)} required /></div>
                         <div className="form-group">
                             <label className="form-label">Status</label>

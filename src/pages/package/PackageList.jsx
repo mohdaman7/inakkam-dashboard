@@ -14,7 +14,7 @@ const DEMO = [
 ];
 const columns = [
     { key: 'totalCoin', label: 'Total Coin', render: (v) => `💰 ${v}` },
-    { key: 'amount', label: 'Amount', render: (v) => `$${v}` },
+    { key: 'amount', label: 'Amount', render: (v) => `₹${v}` },
     { key: 'status', label: 'Package Status', render: (v) => <span className={`badge ${v == 1 ? 'badge-publish' : 'badge-unpublish'}`}>{v == 1 ? 'Publish' : 'Unpublish'}</span> },
 ];
 export default function PackageList() {

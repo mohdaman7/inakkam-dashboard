@@ -21,7 +21,7 @@ export default function PackageAdd({ editData, onSaved }) {
             <div className="card" style={{ maxWidth: 600 }}>
                 <form onSubmit={handleSubmit}>
                     <div className="form-group"><label className="form-label">Total Coin</label><input className="form-input" type="number" placeholder="Enter total coins" value={form.totalCoin} onChange={e => setForm(p => ({ ...p, totalCoin: e.target.value }))} required /></div>
-                    <div className="form-group"><label className="form-label">Amount ($)</label><input className="form-input" type="number" step="0.01" placeholder="Enter amount" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} required /></div>
+                    <div className="form-group"><label className="form-label">Amount (₹)</label><input className="form-input" type="number" step="0.01" placeholder="Enter amount" value={form.amount} onChange={e => setForm(p => ({ ...p, amount: e.target.value }))} required /></div>
                     <div className="form-group">
                         <label className="form-label">Package Status</label>
                         <select className="form-select" value={form.status} onChange={e => setForm(p => ({ ...p, status: e.target.value }))}>
