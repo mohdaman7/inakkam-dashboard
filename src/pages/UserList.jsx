@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import DataTable from '../components/DataTable';
 import {
     MdPerson, MdBlock, MdCheckCircle, MdVisibility, MdRefresh,
     MdSearch, MdVerified, MdEmail, MdPhone, MdWork, MdSchool, MdClose,
-    MdPeople, MdStar, MdSecurity, MdFilterList
+    MdPeople, MdStar, MdSecurity, MdFilterList, MdPersonAdd
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import api from '../utils/api';
@@ -29,6 +30,7 @@ const DEMO = Array.from({ length: 20 }, (_, i) => ({
 }));
 
 export default function UserList() {
+    const navigate = useNavigate();
     const [users, setUsers] = useState(DEMO);
     const [loading, setLoading] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -292,9 +294,18 @@ export default function UserList() {
                         Monitor member profiles, verify KYC documentation status, and enforce account safety controls.
                     </p>
                 </div>
-                <button className="btn btn-secondary btn-sm" onClick={fetchUsers} title="Refresh directory" style={{ borderRadius: 'var(--radius-sm)' }}>
-                    <MdRefresh /> Refresh
-                </button>
+                <div style={{ display: 'flex', gap: 12 }}>
+                    <button 
+                        className="btn btn-primary btn-sm" 
+                        onClick={() => navigate('/user/add')} 
+                        style={{ borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', gap: 6 }}
+                    >
+                        <MdPersonAdd /> Add User
+                    </button>
+                    <button className="btn btn-secondary btn-sm" onClick={fetchUsers} title="Refresh directory" style={{ borderRadius: 'var(--radius-sm)' }}>
+                        <MdRefresh /> Refresh
+                    </button>
+                </div>
             </div>
 
             {/* Stat Summary Cards Grid */}

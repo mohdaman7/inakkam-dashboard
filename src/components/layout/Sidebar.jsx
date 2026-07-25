@@ -13,7 +13,13 @@ import './Sidebar.css';
 const menuItems = [
     { label: 'Dashboard', icon: <MdDashboard />, path: '/' },
     { label: 'KYC Verification', icon: <MdVerifiedUser />, path: '/verification-list' },
-    { label: 'User List', icon: <MdPeople />, path: '/user-list' },
+    {
+        label: 'Users', icon: <MdPeople />,
+        children: [
+            { label: 'Add User', icon: <MdAdd />, path: '/user/add' },
+            { label: 'List Users', icon: <MdList />, path: '/user-list' },
+        ]
+    },
     {
         label: 'Interest', icon: <MdOutlineAutoAwesome />,
         children: [
@@ -103,7 +109,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
         if (admin.role === 'superadmin') return true;
         if (item.label === 'Staff') return false;
 
-        if (item.label === 'KYC Verification' || item.label === 'User List') {
+        if (item.label === 'KYC Verification' || item.label === 'User List' || item.label === 'Users') {
             return hasPermission('userList', 'Read');
         }
         if (item.label === 'Payment List') {
@@ -156,7 +162,8 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                         else if (item.label === 'Plan') key = 'plan';
                         else if (item.label === 'Package') key = 'package';
                         else if (item.label === 'Page') key = 'pages';
-
+                        else if (item.label === 'Users') key = 'userList';
+                        
                         if (key) {
                             if (child.label.startsWith('Add')) {
                                 return hasPermission(key, 'Write');

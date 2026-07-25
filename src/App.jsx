@@ -28,6 +28,7 @@ import PageAdd from './pages/pages/PageAdd';
 import PageList from './pages/pages/PageList';
 import PayoutList from './pages/PayoutList';
 import UserList from './pages/UserList';
+import UserAdd from './pages/UserAdd';
 import PushNotification from './pages/PushNotification';
 import VerificationList from './pages/VerificationList';
 import ProfileSettings from './pages/ProfileSettings';
@@ -122,6 +123,7 @@ export default function App() {
         <Route path="page/list" element={<PermissionRoute moduleKey="pages" op="Read"><PageList /></PermissionRoute>} />
         <Route path="payout-list" element={<PermissionRoute moduleKey="payout" op="Read"><PayoutList /></PermissionRoute>} />
         <Route path="user-list" element={<PermissionRoute moduleKey="userList" op="Read"><UserList /></PermissionRoute>} />
+        <Route path="user/add" element={<PermissionRoute moduleKey="userList" op="Write"><UserAdd /></PermissionRoute>} />
         <Route path="verification-list" element={<PermissionRoute moduleKey="userList" op="Read"><VerificationList /></PermissionRoute>} />
         <Route path="push-notification" element={<PermissionRoute moduleKey="notification" op="Write"><PushNotification /></PermissionRoute>} />
         <Route path="settings" element={<ProfileSettings />} />
