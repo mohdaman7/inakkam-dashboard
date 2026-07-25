@@ -100,7 +100,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
 
     const isItemVisible = (item) => {
         if (!admin) return false;
-        if (admin.role !== 'staff') return true;
+        if (admin.role === 'superadmin') return true;
         if (item.label === 'Staff') return false;
 
         if (item.label === 'KYC Verification' || item.label === 'User List') {

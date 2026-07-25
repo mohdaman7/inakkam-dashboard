@@ -33,7 +33,7 @@ export function AuthProvider({ children }) {
 
     const hasPermission = (moduleKey, op) => {
         if (!admin) return false;
-        if (admin.role !== 'staff') return true;
+        if (admin.role === 'superadmin') return true;
         if (!admin.permissions) return false;
         return !!admin.permissions[`${moduleKey}_${op}`];
     };

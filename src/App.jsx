@@ -59,7 +59,7 @@ function PermissionRoute({ children, moduleKey, op = 'Read' }) {
 function AdminOnlyRoute({ children }) {
   const { admin, loading } = useAuth();
   if (loading) return <div className="loading-page"><div className="loading-spinner" /></div>;
-  if (!admin || admin.role === 'staff') {
+  if (!admin || admin.role !== 'superadmin') {
     return (
       <div className="card" style={{ maxWidth: 500, margin: '60px auto', textAlign: 'center', padding: '40px 24px' }}>
         <div style={{ fontSize: '4rem', color: 'var(--danger)', marginBottom: 16 }}>
