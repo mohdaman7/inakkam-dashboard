@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useAuth } from '../../context/AuthContext';
 import {
     MdDashboard, MdOutlineAutoAwesome, MdLanguage, MdBook, MdCardGiftcard,
     MdFavorite, MdQuestionAnswer, MdStar, MdLocalOffer, MdPeople,
@@ -95,6 +96,84 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
     const [openMenus, setOpenMenus] = useState({});
     const location = useLocation();
 
+    const { admin, hasPermission } = useAuth();
+
+    const isItemVisible = (item) => {
+        if (!admin) return false;
+        if (admin.role !== 'staff') return true;
+        if (item.label === 'Staff') return false;
+
+        if (item.label === 'KYC Verification' || item.label === 'User List') {
+            return hasPermission('userList', 'Read');
+        }
+        if (item.label === 'Payment List') {
+            return hasPermission('paymentGateway', 'Read');
+        }
+        if (item.label === 'Payout List') {
+            return hasPermission('payout', 'Read');
+        }
+        if (item.label === 'Fake User Generator') {
+            return hasPermission('fakeUser', 'Update');
+        }
+        if (item.label === 'Report List') {
+            return hasPermission('report', 'Read');
+        }
+        if (item.label === 'Push Notification') {
+            return hasPermission('notification', 'Write');
+        }
+
+        let key = null;
+        if (item.label === 'Interest') key = 'interest';
+        else if (item.label === 'Language') key = 'language';
+        else if (item.label === 'Religion') key = 'religion';
+        else if (item.label === 'Gift') key = 'gift';
+        else if (item.label === 'Relation Goal') key = 'relationGoals';
+        else if (item.label === 'FAQ') key = 'faq';
+        else if (item.label === 'Plan') key = 'plan';
+        else if (item.label === 'Package') key = 'package';
+        else if (item.label === 'Page') key = 'pages';
+
+        if (key) {
+            return hasPermission(key, 'Read') || hasPermission(key, 'Write');
+        }
+
+        return true;
+    };
+
+    const getFilteredMenuItems = () => {
+        return menuItems
+            .filter(isItemVisible)
+            .map(item => {
+                if (item.children) {
+                    const filteredChildren = item.children.filter(child => {
+                        let key = null;
+                        if (item.label === 'Interest') key = 'interest';
+                        else if (item.label === 'Language') key = 'language';
+                        else if (item.label === 'Religion') key = 'religion';
+                        else if (item.label === 'Gift') key = 'gift';
+                        else if (item.label === 'Relation Goal') key = 'relationGoals';
+                        else if (item.label === 'FAQ') key = 'faq';
+                        else if (item.label === 'Plan') key = 'plan';
+                        else if (item.label === 'Package') key = 'package';
+                        else if (item.label === 'Page') key = 'pages';
+
+                        if (key) {
+                            if (child.label.startsWith('Add')) {
+                                return hasPermission(key, 'Write');
+                            }
+                            if (child.label.startsWith('List')) {
+                                return hasPermission(key, 'Read');
+                            }
+                        }
+                        return true;
+                    });
+                    return { ...item, children: filteredChildren };
+                }
+                return item;
+            })
+            .filter(item => !item.children || item.children.length > 0);
+    };
+
     const toggleMenu = (label) => {
         if (collapsed && onToggle) {
             onToggle(); // expand sidebar if collapsed
@@ -128,7 +207,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
 
                 {/* Nav Menu */}
                 <nav className="sidebar-nav">
-                    {menuItems.map((item) => {
+                    {getFilteredMenuItems().map((item) => {
                         if (item.children) {
                             const isOpen = openMenus[item.label] || isChildActive(item.children);
                             return (

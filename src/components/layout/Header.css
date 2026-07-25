@@ -114,13 +114,8 @@
 }
 
 .header-icon-btn:hover {
-<<<<<<< HEAD
     background: rgba(255, 255, 255, 0.08);
     color: var(--text-primary);
-=======
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-white);
->>>>>>> 7dc08292736b3a10baca73c3c20d6f225d9c9b1b
 }
 
 .header-kyc-btn {
@@ -223,13 +218,8 @@
 
 .header-dropdown-name {
     font-size: 0.95rem;
-<<<<<<< HEAD
     font-weight: 700;
     color: var(--text-white);
-=======
-    font-weight: 600;
-    color: var(--text-primary);
->>>>>>> 7dc08292736b3a10baca73c3c20d6f225d9c9b1b
 }
 
 .header-dropdown-email {

@@ -31,8 +31,15 @@ export function AuthProvider({ children }) {
         localStorage.removeItem('inakkam_admin_token');
     };
 
+    const hasPermission = (moduleKey, op) => {
+        if (!admin) return false;
+        if (admin.role !== 'staff') return true;
+        if (!admin.permissions) return false;
+        return !!admin.permissions[`${moduleKey}_${op}`];
+    };
+
     return (
-        <AuthContext.Provider value={{ admin, loading, login, logout }}>
+        <AuthContext.Provider value={{ admin, loading, login, logout, hasPermission }}>
             {children}
         </AuthContext.Provider>
     );
