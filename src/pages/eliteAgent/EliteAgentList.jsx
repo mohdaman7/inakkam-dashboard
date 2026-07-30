@@ -54,7 +54,7 @@ export default function EliteAgentList() {
         setLoading(true);
         try {
             const res = await api.get('/elite-agents');
-            if (res.data?.agents?.length) {
+            if (res.data?.agents) {
                 setAgents(res.data.agents);
             }
         } catch (err) {
@@ -133,12 +133,15 @@ export default function EliteAgentList() {
         return matchesSearch && matchesStatus && matchesOnline;
     });
 
-    const totalCoins = agents.reduce((acc, a) => acc + (a.coinsEarned || 0), 0);
-    const totalRevenue = agents.reduce((acc, a) => acc + (a.totalEarnings || 0), 0);
+    const getCoins = (a) => a.coinsEarned || a.wallet?.totalCoins || 0;
+    const getEarnings = (a) => a.totalEarnings || a.wallet?.lifetimeEarnings || 0;
+    const getChats = (a) => a.totalChats || 0;
+    const totalCoins = agents.reduce((acc, a) => acc + getCoins(a), 0);
+    const totalRevenue = agents.reduce((acc, a) => acc + getEarnings(a), 0);
     const onlineCount = agents.filter(a => a.isOnline).length;
 
     const leaderboard = [...agents]
-        .sort((a, b) => (b.totalEarnings || 0) - (a.totalEarnings || 0))
+        .sort((a, b) => getEarnings(b) - getEarnings(a))
         .slice(0, 3);
 
     const columns = [
@@ -217,27 +220,27 @@ export default function EliteAgentList() {
         {
             key: 'totalChats',
             label: 'Total Chats',
-            render: (v) => (
+            render: (v, row) => (
                 <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.88rem', display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    <MdChat style={{ color: 'var(--primary-light)' }} /> {v} chats
+                    <MdChat style={{ color: 'var(--primary-light)' }} /> {getChats(row)} chats
                 </span>
             )
         },
         {
             key: 'coinsEarned',
             label: 'Coins Earned',
-            render: (v) => (
+            render: (v, row) => (
                 <span style={{ color: '#ffd43b', fontWeight: 800, fontSize: '0.95rem', display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(255, 212, 59, 0.08)', padding: '4px 8px', borderRadius: '6px' }}>
-                    🪙 {v}
+                    🪙 {getCoins(row)}
                 </span>
             )
         },
         {
             key: 'totalEarnings',
             label: 'Total Earnings',
-            render: (v) => (
+            render: (v, row) => (
                 <span style={{ color: '#40c057', fontWeight: 800, fontSize: '0.95rem', background: 'rgba(64, 192, 87, 0.08)', padding: '4px 8px', borderRadius: '6px' }}>
-                    ₹{v.toLocaleString()}
+                    ₹{getEarnings(row).toLocaleString()}
                 </span>
             )
         },
@@ -247,7 +250,7 @@ export default function EliteAgentList() {
             render: (v, row) => (
                 <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
                     <div><span style={{ color: 'var(--text-secondary)' }}>Joined:</span> {v}</div>
-                    <div><span style={{ color: 'var(--text-secondary)' }}>Active:</span> {row.lastLogin.split(',')[0]}</div>
+                    {row.lastLogin && <div><span style={{ color: 'var(--text-secondary)' }}>Active:</span> {String(row.lastLogin).split(',')[0]}</div>}
                 </div>
             )
         }
@@ -337,8 +340,8 @@ export default function EliteAgentList() {
                                 <span style={{ position: 'absolute', top: -10, right: -10, background: '#cbd5e1', color: '#1e293b', width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem' }}>2</span>
                             </div>
                             <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{leaderboard[1].name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0' }}>{leaderboard[1].totalChats} Chats</div>
-                            <div style={{ color: '#40c057', fontWeight: 800, fontSize: '1rem' }}>₹{leaderboard[1].totalEarnings.toLocaleString()}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0' }}>{getChats(leaderboard[1])} Chats</div>
+                            <div style={{ color: '#40c057', fontWeight: 800, fontSize: '1rem' }}>₹{getEarnings(leaderboard[1]).toLocaleString()}</div>
                         </div>
                     )}
 
@@ -354,8 +357,8 @@ export default function EliteAgentList() {
                                 <span style={{ position: 'absolute', top: -12, right: -12, background: '#ffd43b', color: '#1e293b', width: 28, height: 28, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.95rem', boxShadow: '0 4px 10px rgba(255,212,59,0.3)' }}>1</span>
                             </div>
                             <div style={{ fontWeight: 800, color: 'var(--text-primary)', fontSize: '1rem' }}>{leaderboard[0].name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0' }}>{leaderboard[0].totalChats} Chats</div>
-                            <div style={{ color: '#40c057', fontWeight: 800, fontSize: '1.05rem' }}>₹{leaderboard[0].totalEarnings.toLocaleString()}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0' }}>{getChats(leaderboard[0])} Chats</div>
+                            <div style={{ color: '#40c057', fontWeight: 800, fontSize: '1.05rem' }}>₹{getEarnings(leaderboard[0]).toLocaleString()}</div>
                         </div>
                     )}
 
@@ -371,8 +374,8 @@ export default function EliteAgentList() {
                                 <span style={{ position: 'absolute', top: -10, right: -10, background: '#cd7f32', color: '#fff', width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem' }}>3</span>
                             </div>
                             <div style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.95rem' }}>{leaderboard[2].name}</div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0' }}>{leaderboard[2].totalChats} Chats</div>
-                            <div style={{ color: '#40c057', fontWeight: 800, fontSize: '1rem' }}>₹{leaderboard[2].totalEarnings.toLocaleString()}</div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', margin: '2px 0' }}>{getChats(leaderboard[2])} Chats</div>
+                            <div style={{ color: '#40c057', fontWeight: 800, fontSize: '1rem' }}>₹{getEarnings(leaderboard[2]).toLocaleString()}</div>
                         </div>
                     )}
                 </div>
