@@ -5,7 +5,8 @@ import {
     MdDashboard, MdOutlineAutoAwesome, MdLanguage, MdBook, MdCardGiftcard,
     MdFavorite, MdQuestionAnswer, MdStar, MdLocalOffer, MdPeople,
     MdPayment, MdPersonAdd, MdReport, MdPages, MdAccountBalanceWallet,
-    MdList, MdNotifications, MdAdd, MdVerifiedUser, MdSettings, MdChevronRight
+    MdList, MdNotifications, MdAdd, MdVerifiedUser, MdSettings, MdChevronRight,
+    MdSecurity
 } from 'react-icons/md';
 import inakkamLogo from '../../assets/inakkam-logo-icon.png';
 import './Sidebar.css';
@@ -18,6 +19,13 @@ const menuItems = [
         children: [
             { label: 'Add User', icon: <MdAdd />, path: '/user/add' },
             { label: 'List Users', icon: <MdList />, path: '/user-list' },
+        ]
+    },
+    {
+        label: 'Elite Agents', icon: <MdSecurity />,
+        children: [
+            { label: 'Add Agent', icon: <MdAdd />, path: '/elite-agent/add' },
+            { label: 'List Agents', icon: <MdList />, path: '/elite-agent/list' },
         ]
     },
     {
@@ -109,8 +117,8 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
         if (admin.role === 'superadmin') return true;
         if (item.label === 'Staff') return false;
 
-        if (item.label === 'KYC Verification' || item.label === 'User List' || item.label === 'Users') {
-            return hasPermission('userList', 'Read');
+        if (item.label === 'KYC Verification' || item.label === 'User List' || item.label === 'Users' || item.label === 'Elite Agents') {
+            return hasPermission('userList', 'Read') || hasPermission('eliteAgent', 'Read');
         }
         if (item.label === 'Payment List') {
             return hasPermission('paymentGateway', 'Read');
@@ -163,13 +171,14 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                         else if (item.label === 'Package') key = 'package';
                         else if (item.label === 'Page') key = 'pages';
                         else if (item.label === 'Users') key = 'userList';
+                        else if (item.label === 'Elite Agents') key = 'eliteAgent';
                         
                         if (key) {
                             if (child.label.startsWith('Add')) {
-                                return hasPermission(key, 'Write');
+                                return hasPermission(key, 'Write') || (key === 'eliteAgent' && hasPermission('userList', 'Write'));
                             }
                             if (child.label.startsWith('List')) {
-                                return hasPermission(key, 'Read');
+                                return hasPermission(key, 'Read') || (key === 'eliteAgent' && hasPermission('userList', 'Read'));
                             }
                         }
                         return true;

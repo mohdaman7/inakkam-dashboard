@@ -32,6 +32,9 @@ import UserAdd from './pages/UserAdd';
 import PushNotification from './pages/PushNotification';
 import VerificationList from './pages/VerificationList';
 import ProfileSettings from './pages/ProfileSettings';
+import EliteAgentList from './pages/eliteAgent/EliteAgentList';
+import EliteAgentAdd from './pages/eliteAgent/EliteAgentAdd';
+import EliteAgentDetails from './pages/eliteAgent/EliteAgentDetails';
 
 function PermissionRoute({ children, moduleKey, op = 'Read' }) {
   const { hasPermission, loading } = useAuth();
@@ -124,6 +127,10 @@ export default function App() {
         <Route path="payout-list" element={<PermissionRoute moduleKey="payout" op="Read"><PayoutList /></PermissionRoute>} />
         <Route path="user-list" element={<PermissionRoute moduleKey="userList" op="Read"><UserList /></PermissionRoute>} />
         <Route path="user/add" element={<PermissionRoute moduleKey="userList" op="Write"><UserAdd /></PermissionRoute>} />
+        <Route path="elite-agent/list" element={<PermissionRoute moduleKey="eliteAgent" op="Read"><EliteAgentList /></PermissionRoute>} />
+        <Route path="elite-agent/add" element={<PermissionRoute moduleKey="eliteAgent" op="Write"><EliteAgentAdd /></PermissionRoute>} />
+        <Route path="elite-agent/edit/:id" element={<PermissionRoute moduleKey="eliteAgent" op="Write"><EliteAgentAdd /></PermissionRoute>} />
+        <Route path="elite-agent/:id" element={<PermissionRoute moduleKey="eliteAgent" op="Read"><EliteAgentDetails /></PermissionRoute>} />
         <Route path="verification-list" element={<PermissionRoute moduleKey="userList" op="Read"><VerificationList /></PermissionRoute>} />
         <Route path="push-notification" element={<PermissionRoute moduleKey="notification" op="Write"><PushNotification /></PermissionRoute>} />
         <Route path="settings" element={<ProfileSettings />} />
