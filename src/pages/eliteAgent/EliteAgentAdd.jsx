@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     MdArrowBack, MdPersonAdd, MdCloudUpload, MdSecurity,
     MdVisibility, MdVisibilityOff, MdFolderSpecial, MdAutoFixHigh,
-    MdVerified, MdKey, MdLockOpen
+    MdVerified, MdKey, MdLockOpen, MdCheckCircle, MdInfoOutline,
+    MdNavigateNext, MdNavigateBefore, MdSave, MdAccountCircle, MdAssignmentInd
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -17,6 +18,7 @@ export default function EliteAgentAdd() {
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState('');
     const [showPassword, setShowPassword] = useState(false);
+    const [activeStep, setActiveStep] = useState(1); // 1: Account, 2: Personal, 3: Bio & Interests
 
     const [form, setForm] = useState({
         name: '',
@@ -80,6 +82,7 @@ export default function EliteAgentAdd() {
             pass += chars.charAt(Math.floor(Math.random() * chars.length));
         }
         setForm(prev => ({ ...prev, password: pass }));
+        toast.success('Generated a secure random password!');
     };
 
     const handleImageChange = (e) => {
@@ -87,6 +90,7 @@ export default function EliteAgentAdd() {
         if (file) {
             setImage(file);
             setPreview(URL.createObjectURL(file));
+            toast.success('Profile photo selected!');
         }
     };
 
@@ -95,8 +99,23 @@ export default function EliteAgentAdd() {
         setForm(prev => ({ ...prev, [name]: value }));
     };
 
+    const handleNextStep = () => {
+        // Simple step validation
+        if (activeStep === 1) {
+            if (!form.name || !form.email || (!isEdit && !form.password) || !form.phone) {
+                toast.error('Please fill in all required account fields.');
+                return;
+            }
+        }
+        setActiveStep(prev => Math.min(prev + 1, 3));
+    };
+
+    const handlePrevStep = () => {
+        setActiveStep(prev => Math.max(prev - 1, 1));
+    };
+
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault();
         setLoading(true);
 
         try {
@@ -124,117 +143,240 @@ export default function EliteAgentAdd() {
     };
 
     return (
-        <div>
+        <div style={{ maxWidth: 1100, margin: '0 auto', paddingBottom: 60 }}>
             {/* Page Header */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 32 }}>
                 <button
                     onClick={() => navigate('/elite-agent/list')}
                     className="btn btn-secondary btn-sm btn-icon"
-                    style={{ borderRadius: 'var(--radius-sm)' }}
+                    style={{ borderRadius: 12, width: 42, height: 42, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                    <MdArrowBack />
+                    <MdArrowBack style={{ fontSize: '1.2rem' }} />
                 </button>
                 <div>
-                    <h1 style={{ fontSize: '1.7rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 10, letterSpacing: '-0.02em', margin: 0 }}>
-                        <MdSecurity style={{ color: 'var(--primary)' }} /> {isEdit ? 'Edit Elite Agent' : 'Add Elite Agent'}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ fontSize: '0.65rem', fontWeight: 800, background: 'var(--primary)', color: '#fff', padding: '3px 8px', borderRadius: 6, textTransform: 'uppercase' }}>Module</span>
+                        <span style={{ fontSize: '0.82rem', color: 'var(--primary)', fontWeight: 600 }}>Elite Agent Accounts</span>
+                    </div>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 10, letterSpacing: '-0.03em', margin: '4px 0 0 0' }}>
+                        {isEdit ? 'Edit Elite Agent' : 'Create Elite Agent Account'}
                     </h1>
-                    <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', marginTop: 4, margin: 0 }}>
-                        {isEdit ? 'Update settings, wallet details, and personal info.' : 'Create a company-managed chat profile. Automatically sets Premium, Verified, and Chat enabled.'}
-                    </p>
                 </div>
             </div>
 
-            {/* Form Card */}
-            <div className="card" style={{ maxWidth: 1000, margin: '0 auto', padding: '32px 36px', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.03)', border: '1px solid var(--border-color)', background: 'var(--bg-card)' }}>
-                <form onSubmit={handleSubmit}>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 2.5fr', gap: 40 }}>
+            {/* Stepper Progress Bar */}
+            <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '24px 32px',
+                background: 'var(--bg-card)',
+                borderRadius: 16,
+                border: '1px solid var(--border-color)',
+                marginBottom: 28,
+                position: 'relative',
+                overflow: 'hidden'
+            }}>
+                {/* Horizontal connecting line */}
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '10%',
+                    right: '10%',
+                    height: 2,
+                    background: 'rgba(255,255,255,0.06)',
+                    zIndex: 1
+                }} />
+                
+                {/* Active progress track */}
+                <div style={{
+                    position: 'absolute',
+                    top: '50%',
+                    left: '10%',
+                    width: activeStep === 1 ? '0%' : activeStep === 2 ? '40%' : '80%',
+                    height: 2,
+                    background: 'linear-gradient(90deg, var(--primary) 0%, #9610ff 100%)',
+                    zIndex: 1,
+                    transition: 'width 0.3s ease'
+                }} />
 
-                        {/* LEFT COLUMN: Profile Image Upload & Auto-Configurations */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
-                            
-                            {/* Image Uploader */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                <label className="form-label" style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.9rem' }}>Profile Photo</label>
-                                <div style={{
-                                    width: '100%',
-                                    aspectRatio: '1/1',
-                                    borderRadius: '16px',
-                                    border: '2px dashed var(--border-color)',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    overflow: 'hidden',
-                                    position: 'relative',
-                                    background: 'var(--bg-input)',
-                                    transition: 'all 0.2s',
+                {/* Step 1 */}
+                <div 
+                    onClick={() => setActiveStep(1)}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 2, cursor: 'pointer' }}
+                >
+                    <div style={{
+                        width: 38, height: 38, borderRadius: '50%',
+                        background: activeStep >= 1 ? 'linear-gradient(135deg, var(--primary) 0%, #9610ff 100%)' : 'var(--bg-input)',
+                        color: activeStep >= 1 ? '#fff' : 'var(--text-muted)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: '0.9rem',
+                        boxShadow: activeStep === 1 ? '0 0 15px var(--primary-glow)' : 'none',
+                        transition: 'all 0.3s ease',
+                        border: activeStep >= 1 ? 'none' : '1px solid var(--border-color)'
+                    }}>
+                        1
+                    </div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: activeStep === 1 ? 'var(--text-primary)' : 'var(--text-muted)' }}>Account Info</span>
+                </div>
+
+                {/* Step 2 */}
+                <div 
+                    onClick={() => { if (form.name && form.email) setActiveStep(2) }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 2, cursor: 'pointer' }}
+                >
+                    <div style={{
+                        width: 38, height: 38, borderRadius: '50%',
+                        background: activeStep >= 2 ? 'linear-gradient(135deg, var(--primary) 0%, #9610ff 100%)' : 'var(--bg-input)',
+                        color: activeStep >= 2 ? '#fff' : 'var(--text-muted)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: '0.9rem',
+                        boxShadow: activeStep === 2 ? '0 0 15px var(--primary-glow)' : 'none',
+                        transition: 'all 0.3s ease',
+                        border: activeStep >= 2 ? 'none' : '1px solid var(--border-color)'
+                    }}>
+                        2
+                    </div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: activeStep === 2 ? 'var(--text-primary)' : 'var(--text-muted)' }}>Personal Profile</span>
+                </div>
+
+                {/* Step 3 */}
+                <div 
+                    onClick={() => { if (form.name && form.email) setActiveStep(3) }}
+                    style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8, zIndex: 2, cursor: 'pointer' }}
+                >
+                    <div style={{
+                        width: 38, height: 38, borderRadius: '50%',
+                        background: activeStep >= 3 ? 'linear-gradient(135deg, var(--primary) 0%, #9610ff 100%)' : 'var(--bg-input)',
+                        color: activeStep >= 3 ? '#fff' : 'var(--text-muted)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        fontWeight: 700, fontSize: '0.9rem',
+                        boxShadow: activeStep === 3 ? '0 0 15px var(--primary-glow)' : 'none',
+                        transition: 'all 0.3s ease',
+                        border: activeStep >= 3 ? 'none' : '1px solid var(--border-color)'
+                    }}>
+                        3
+                    </div>
+                    <span style={{ fontSize: '0.78rem', fontWeight: 700, color: activeStep === 3 ? 'var(--text-primary)' : 'var(--text-muted)' }}>Interests & Bio</span>
+                </div>
+            </div>
+
+            {/* Main Form Container */}
+            <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: 28 }}>
+                
+                {/* Side Widget: Profile Photo & Configurations */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                    {/* Photo Upload Card */}
+                    <div className="card" style={{ padding: 24, textAlign: 'center' }}>
+                        <h4 style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 16px 0', textAlign: 'left' }}>
+                            Profile Photo
+                        </h4>
+                        <div style={{
+                            width: 160,
+                            height: 160,
+                            borderRadius: '50%',
+                            border: '3px dashed var(--border-color)',
+                            margin: '0 auto 16px auto',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            background: 'var(--bg-input)',
+                            transition: 'all 0.25s ease',
+                            cursor: 'pointer',
+                            boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.15)'
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--primary)'}
+                        onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                        >
+                            <input
+                                type="file"
+                                accept="image/*"
+                                onChange={handleImageChange}
+                                style={{
+                                    position: 'absolute',
+                                    inset: 0,
+                                    opacity: 0,
                                     cursor: 'pointer',
-                                    boxShadow: 'inset 0 2px 6px rgba(0,0,0,0.02)'
-                                }}>
-                                    <input
-                                        type="file"
-                                        accept="image/*"
-                                        onChange={handleImageChange}
-                                        style={{
-                                            position: 'absolute',
-                                            inset: 0,
-                                            opacity: 0,
-                                            cursor: 'pointer',
-                                            zIndex: 2
-                                        }}
-                                    />
-                                    {preview ? (
-                                        <img src={preview} alt="Profile Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                                    ) : (
-                                        <div style={{ textAlign: 'center', color: 'var(--text-muted)', padding: 16 }}>
-                                            <MdCloudUpload style={{ fontSize: '3rem', color: 'var(--primary)' }} />
-                                            <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)', marginTop: 8 }}>Click to Upload</div>
-                                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginTop: 4 }}>PNG, JPG up to 5MB</div>
-                                        </div>
-                                    )}
+                                    zIndex: 2
+                                }}
+                            />
+                            {preview ? (
+                                <img src={preview} alt="Profile Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                                <div style={{ padding: 10, color: 'var(--text-muted)' }}>
+                                    <MdCloudUpload style={{ fontSize: '2.5rem', color: 'var(--primary-light)', marginBottom: 6 }} />
+                                    <div style={{ fontSize: '0.72rem', fontWeight: 700 }}>Upload Image</div>
                                 </div>
-                            </div>
-
-                            {/* Auto Settings Status Panel */}
-                            <div style={{ padding: '20px 24px', background: 'rgba(251, 111, 146, 0.04)', borderRadius: '14px', border: '1px solid rgba(251, 111, 146, 0.12)' }}>
-                                <h4 style={{ fontSize: '0.88rem', color: 'var(--primary)', margin: '0 0 16px 0', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <MdAutoFixHigh /> Auto-Config
-                                </h4>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Premium Badge</span>
-                                        <span className="badge badge-success" style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px' }}>YES</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Verified Badge</span>
-                                        <span className="badge badge-success" style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px' }}>YES</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>Immediate Chat</span>
-                                        <span className="badge badge-success" style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px' }}>ENABLED</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>KYC Exemption</span>
-                                        <span className="badge badge-primary-light" style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', color: 'var(--primary)' }}>EXEMPT</span>
-                                    </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.82rem' }}>
-                                        <span style={{ color: 'var(--text-secondary)', fontWeight: 500 }}>System Role</span>
-                                        <span className="badge badge-primary" style={{ fontSize: '0.72rem', fontWeight: 700, padding: '3px 8px', background: 'var(--primary)' }}>AGENT</span>
-                                    </div>
-                                </div>
-                            </div>
+                            )}
                         </div>
+                        <p style={{ fontSize: '0.72rem', color: 'var(--text-muted)', margin: 0 }}>
+                            Select a clear female profile avatar. PNG/JPG up to 5MB.
+                        </p>
+                    </div>
 
-                        {/* RIGHT COLUMN: Form Fields */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
-                            
-                            {/* Section 1: Basic Information */}
+                    {/* Auto-Config Status widget */}
+                    <div className="card" style={{
+                        padding: 24,
+                        background: 'linear-gradient(135deg, rgba(251, 111, 146, 0.05) 0%, rgba(150, 16, 255, 0.02) 100%)',
+                        border: '1px solid rgba(251, 111, 146, 0.15)'
+                    }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 18 }}>
+                            <div style={{
+                                width: 28, height: 28, borderRadius: 8,
+                                background: 'rgba(251,111,146,0.15)',
+                                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                                color: 'var(--primary)'
+                            }}>
+                                <MdAutoFixHigh style={{ fontSize: '1rem' }} />
+                            </div>
+                            <h4 style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--text-primary)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+                                System Auto-Config
+                            </h4>
+                        </div>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                            {[
+                                { label: 'Account Type', value: 'Premium', color: '#ffd43b', bg: 'rgba(255,212,59,0.12)' },
+                                { label: 'Verification Status', value: 'Verified', color: '#00d68f', bg: 'rgba(0,214,143,0.12)' },
+                                { label: 'Direct Chatting', value: 'Instant Enable', color: '#0095ff', bg: 'rgba(0,149,255,0.12)' },
+                                { label: 'KYC Obligation', value: 'Exempt', color: 'var(--primary)', bg: 'rgba(251,111,146,0.12)' }
+                            ].map((cfg, idx) => (
+                                <div key={idx} style={{
+                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                                    padding: '8px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.02)',
+                                    border: '1px solid rgba(255,255,255,0.03)'
+                                }}>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>{cfg.label}</span>
+                                    <span style={{
+                                        fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 6,
+                                        color: cfg.color, background: cfg.bg
+                                    }}>{cfg.value}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Form Fields Card */}
+                <div className="card" style={{ padding: 32, minHeight: 460, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <form onSubmit={e => e.preventDefault()} style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        
+                        {/* Step 1: Account Setup */}
+                        {activeStep === 1 && (
                             <div>
-                                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: 10, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    👤 Basic Information
-                                </h3>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, borderBottom: '1px solid var(--border-color)', paddingBottom: 14 }}>
+                                    <MdAssignmentInd style={{ fontSize: '1.3rem', color: 'var(--primary)' }} />
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Account Credentials</h3>
+                                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Configure main login information for this profile</p>
+                                    </div>
+                                </div>
+
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                                     <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Full Name *</label>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Full Name *</label>
                                         <input
                                             type="text"
                                             name="name"
@@ -242,13 +384,13 @@ export default function EliteAgentAdd() {
                                             onChange={handleInputChange}
                                             required
                                             className="form-control"
-                                            placeholder="Enter full name"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                            placeholder="e.g. Anjali Nair"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Email Address *</label>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Email Address *</label>
                                         <input
                                             type="email"
                                             name="email"
@@ -256,14 +398,14 @@ export default function EliteAgentAdd() {
                                             onChange={handleInputChange}
                                             required
                                             className="form-control"
-                                            placeholder="agent@inakkam.com"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                            placeholder="anjali@inakkam.com"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
                                         />
                                     </div>
 
                                     {!isEdit && (
                                         <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                                            <label className="form-label" style={{ fontWeight: 600 }}>Password *</label>
+                                            <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Login Password *</label>
                                             <div style={{ display: 'flex', gap: 12 }}>
                                                 <div style={{ position: 'relative', flex: 1 }}>
                                                     <input
@@ -273,7 +415,7 @@ export default function EliteAgentAdd() {
                                                         onChange={handleInputChange}
                                                         required
                                                         className="form-control"
-                                                        style={{ padding: '12px 40px 12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)', width: '100%' }}
+                                                        style={{ padding: '12px 40px 12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)', width: '100%', fontWeight: 'bold', letterSpacing: showPassword ? 'normal' : '0.2em' }}
                                                     />
                                                     <button
                                                         type="button"
@@ -287,7 +429,7 @@ export default function EliteAgentAdd() {
                                                     type="button"
                                                     onClick={generateRandomPassword}
                                                     className="btn btn-secondary"
-                                                    style={{ whiteSpace: 'nowrap', borderRadius: '10px', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 700 }}
+                                                    style={{ whiteSpace: 'nowrap', borderRadius: 10, display: 'flex', alignItems: 'center', gap: 6, fontWeight: 700, fontSize: '0.82rem' }}
                                                 >
                                                     <MdKey /> Generate Password
                                                 </button>
@@ -296,7 +438,7 @@ export default function EliteAgentAdd() {
                                     )}
 
                                     <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Mobile Number *</label>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Mobile Number *</label>
                                         <input
                                             type="tel"
                                             name="phone"
@@ -304,150 +446,54 @@ export default function EliteAgentAdd() {
                                             onChange={handleInputChange}
                                             required
                                             className="form-control"
-                                            placeholder="+91 98765 43210"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                            placeholder="+91 98950 12345"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Gender</label>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Gender Profile</label>
                                         <select
                                             name="gender"
                                             value={form.gender}
                                             onChange={handleInputChange}
                                             className="form-control"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)', cursor: 'pointer' }}
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)', cursor: 'pointer' }}
                                         >
-                                            <option value="Woman">Female (Default)</option>
+                                            <option value="Woman">Female (Recommended)</option>
                                             <option value="Man">Male</option>
                                         </select>
                                     </div>
+                                </div>
+                            </div>
+                        )}
 
+                        {/* Step 2: Personal Profile Details */}
+                        {activeStep === 2 && (
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, borderBottom: '1px solid var(--border-color)', paddingBottom: 14 }}>
+                                    <MdAccountCircle style={{ fontSize: '1.3rem', color: 'var(--primary)' }} />
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Personal Details</h3>
+                                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Add demographic and identity characteristics</p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                                     <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Date of Birth</label>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Date of Birth</label>
                                         <input
                                             type="date"
                                             name="dob"
                                             value={form.dob}
                                             onChange={handleInputChange}
                                             className="form-control"
-                                            style={{ padding: '11px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                            style={{ padding: '11px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
                                         />
                                     </div>
 
                                     <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Country</label>
-                                        <input
-                                            type="text"
-                                            name="country"
-                                            value={form.country}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>State</label>
-                                        <input
-                                            type="text"
-                                            name="state"
-                                            value={form.state}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            placeholder="e.g. Kerala"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>City</label>
-                                        <input
-                                            type="text"
-                                            name="city"
-                                            value={form.city}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            placeholder="e.g. Kochi"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Section 2: Profile Details */}
-                            <div>
-                                <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', borderBottom: '1px solid var(--border-color)', paddingBottom: 10, marginBottom: 20, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                    <MdFolderSpecial style={{ color: 'var(--primary-light)' }} /> Profile Details
-                                </h3>
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                                    <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Language(s)</label>
-                                        <input
-                                            type="text"
-                                            name="language"
-                                            value={form.language}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            placeholder="Malayalam, English, Hindi"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Religion</label>
-                                        <input
-                                            type="text"
-                                            name="religion"
-                                            value={form.religion}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            placeholder="e.g. Hindu, Christian, Muslim"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-
-                                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Interests (Comma separated)</label>
-                                        <input
-                                            type="text"
-                                            name="interests"
-                                            value={form.interests}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            placeholder="Reading, Music, Travel, Cinema"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Height (cm)</label>
-                                        <input
-                                            type="number"
-                                            name="height"
-                                            value={form.height}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            placeholder="165"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-
-                                    <div className="form-group">
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Weight (kg)</label>
-                                        <input
-                                            type="number"
-                                            name="weight"
-                                            value={form.weight}
-                                            onChange={handleInputChange}
-                                            className="form-control"
-                                            placeholder="55"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
-                                        />
-                                    </div>
-
-                                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                                        <label className="form-label" style={{ fontWeight: 600 }}>Occupation</label>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Occupation</label>
                                         <input
                                             type="text"
                                             name="occupation"
@@ -455,48 +501,210 @@ export default function EliteAgentAdd() {
                                             onChange={handleInputChange}
                                             className="form-control"
                                             placeholder="e.g. Relationship Consultant"
-                                            style={{ padding: '12px 14px', borderRadius: '10px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Country</label>
+                                        <input
+                                            type="text"
+                                            name="country"
+                                            value={form.country}
+                                            onChange={handleInputChange}
+                                            className="form-control"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>State</label>
+                                        <input
+                                            type="text"
+                                            name="state"
+                                            value={form.state}
+                                            onChange={handleInputChange}
+                                            className="form-control"
+                                            placeholder="e.g. Kerala"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>City</label>
+                                        <input
+                                            type="text"
+                                            name="city"
+                                            value={form.city}
+                                            onChange={handleInputChange}
+                                            className="form-control"
+                                            placeholder="e.g. Kochi"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Religion</label>
+                                        <input
+                                            type="text"
+                                            name="religion"
+                                            value={form.religion}
+                                            onChange={handleInputChange}
+                                            className="form-control"
+                                            placeholder="e.g. Hindu"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Step 3: Bio & Interests */}
+                        {activeStep === 3 && (
+                            <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 24, borderBottom: '1px solid var(--border-color)', paddingBottom: 14 }}>
+                                    <MdFolderSpecial style={{ fontSize: '1.3rem', color: 'var(--primary)' }} />
+                                    <div>
+                                        <h3 style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--text-primary)', margin: 0 }}>Bio & Engagement Profile</h3>
+                                        <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '2px 0 0 0' }}>Provide conversational topics and profile summary</p>
+                                    </div>
+                                </div>
+
+                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+                                    <div className="form-group">
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Languages Spoken</label>
+                                        <input
+                                            type="text"
+                                            name="language"
+                                            value={form.language}
+                                            onChange={handleInputChange}
+                                            className="form-control"
+                                            placeholder="e.g. Malayalam, English"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                        />
+                                    </div>
+
+                                    <div className="form-group" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                        <div>
+                                            <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Height (cm)</label>
+                                            <input
+                                                type="number"
+                                                name="height"
+                                                value={form.height}
+                                                onChange={handleInputChange}
+                                                className="form-control"
+                                                placeholder="165"
+                                                style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Weight (kg)</label>
+                                            <input
+                                                type="number"
+                                                name="weight"
+                                                value={form.weight}
+                                                onChange={handleInputChange}
+                                                className="form-control"
+                                                placeholder="54"
+                                                style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>Interests / Hobbies</label>
+                                        <input
+                                            type="text"
+                                            name="interests"
+                                            value={form.interests}
+                                            onChange={handleInputChange}
+                                            className="form-control"
+                                            placeholder="Reading, Music, Travel, Yoga"
+                                            style={{ padding: '12px 14px', borderRadius: 10, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)' }}
                                         />
                                     </div>
 
                                     <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                                        <label className="form-label" style={{ fontWeight: 600 }}>About Me</label>
+                                        <label className="form-label" style={{ fontWeight: 700, fontSize: '0.8rem', color: 'var(--text-primary)' }}>About Me (Bio Description)</label>
                                         <textarea
                                             name="aboutMe"
                                             value={form.aboutMe}
                                             onChange={handleInputChange}
                                             className="form-control"
-                                            rows="4"
-                                            placeholder="Write something engaging for the user profile description..."
-                                            style={{ padding: '12px 14px', borderRadius: '12px', color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)', lineHeight: '1.5' }}
+                                            rows="3"
+                                            placeholder="Write an engaging bio to attract customers..."
+                                            style={{ padding: '12px 14px', borderRadius: 12, color: 'var(--text-primary)', border: '1px solid var(--border-color)', background: 'var(--bg-input)', lineHeight: 1.5 }}
                                         />
                                     </div>
                                 </div>
                             </div>
+                        )}
 
-                            {/* Submission Buttons */}
-                            <div style={{ display: 'flex', gap: 14, justifyContent: 'flex-end', marginTop: 12, borderTop: '1px solid var(--border-color)', paddingTop: 24 }}>
+                        {/* Wizard Action Footer */}
+                        <div style={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            marginTop: 32,
+                            borderTop: '1px solid var(--border-color)',
+                            paddingTop: 24
+                        }}>
+                            <div>
+                                {activeStep > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={handlePrevStep}
+                                        className="btn btn-secondary"
+                                        style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 10, fontWeight: 600 }}
+                                    >
+                                        <MdNavigateBefore style={{ fontSize: '1.2rem' }} /> Back
+                                    </button>
+                                )}
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 12 }}>
                                 <button
                                     type="button"
                                     onClick={() => navigate('/elite-agent/list')}
                                     className="btn btn-secondary"
-                                    style={{ padding: '11px 24px', borderRadius: '10px', fontWeight: 600 }}
+                                    style={{ borderRadius: 10, fontWeight: 600 }}
                                 >
                                     Cancel
                                 </button>
-                                <button
-                                    type="submit"
-                                    disabled={loading}
-                                    className="btn btn-primary animate-hover"
-                                    style={{ minWidth: 170, padding: '11px 24px', borderRadius: '10px', fontWeight: 700, boxShadow: 'var(--shadow-primary)' }}
-                                >
-                                    {loading ? 'Saving...' : isEdit ? 'Update Agent Profile' : 'Create Agent Account'}
-                                </button>
+                                {activeStep < 3 ? (
+                                    <button
+                                        type="button"
+                                        onClick={handleNextStep}
+                                        className="btn btn-primary"
+                                        style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 10, fontWeight: 700 }}
+                                    >
+                                        Next Step <MdNavigateNext style={{ fontSize: '1.2rem' }} />
+                                    </button>
+                                ) : (
+                                    <button
+                                        type="button"
+                                        onClick={handleSubmit}
+                                        disabled={loading}
+                                        className="btn btn-primary"
+                                        style={{
+                                            display: 'flex', alignItems: 'center', gap: 6, borderRadius: 10, fontWeight: 700,
+                                            background: 'linear-gradient(135deg, var(--primary) 0%, #9610ff 100%)',
+                                            boxShadow: '0 4px 16px rgba(251,111,146,0.3)'
+                                        }}
+                                    >
+                                        {loading ? 'Creating...' : (
+                                            <>
+                                                <MdSave style={{ fontSize: '1.1rem' }} /> {isEdit ? 'Update Profile' : 'Complete Setup'}
+                                            </>
+                                        )}
+                                    </button>
+                                )}
                             </div>
                         </div>
 
-                    </div>
-                </form>
+                    </form>
+                </div>
+
             </div>
         </div>
     );
