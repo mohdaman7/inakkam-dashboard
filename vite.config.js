@@ -5,6 +5,11 @@ export default defineConfig({
     plugins: [react()],
     server: {
         port: 7001,
+        allowedHosts: [
+            'inakkam.co',
+            'www.inakkam.co',
+            '.inakkam.co', // allows all subdomains
+        ],
         proxy: {
             '/api': {
                 target: 'http://82.29.165.57:7000',
