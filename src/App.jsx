@@ -35,6 +35,15 @@ import ProfileSettings from './pages/ProfileSettings';
 import EliteAgentList from './pages/eliteAgent/EliteAgentList';
 import EliteAgentAdd from './pages/eliteAgent/EliteAgentAdd';
 import EliteAgentDetails from './pages/eliteAgent/EliteAgentDetails';
+import EliteAgentPortal from './pages/eliteAgent/EliteAgentPortal';
+
+function HomeRoute() {
+  const { admin } = useAuth();
+  if (admin && (admin.role === 'agent' || admin.isEliteAgent)) {
+    return <EliteAgentPortal />;
+  }
+  return <Dashboard />;
+}
 
 function PermissionRoute({ children, moduleKey, op = 'Read' }) {
   const { hasPermission, loading } = useAuth();
@@ -100,7 +109,7 @@ export default function App() {
           </ProtectedRoute>
         }
       >
-        <Route index element={<Dashboard />} />
+        <Route index element={<HomeRoute />} />
         <Route path="interest/add" element={<PermissionRoute moduleKey="interest" op="Write"><InterestAdd /></PermissionRoute>} />
         <Route path="interest/list" element={<PermissionRoute moduleKey="interest" op="Read"><InterestList /></PermissionRoute>} />
         <Route path="language/add" element={<PermissionRoute moduleKey="language" op="Write"><LanguageAdd /></PermissionRoute>} />

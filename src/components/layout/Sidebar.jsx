@@ -106,6 +106,11 @@ const menuItems = [
     { label: 'Settings', icon: <MdSettings />, path: '/settings' },
 ];
 
+const agentMenuItems = [
+    { label: 'Agent Portal', icon: <MdDashboard />, path: '/' },
+    { label: 'Settings', icon: <MdSettings />, path: '/settings' },
+];
+
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {
     const [openMenus, setOpenMenus] = useState({});
     const location = useLocation();
@@ -114,6 +119,7 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
 
     const isItemVisible = (item) => {
         if (!admin) return false;
+        if (admin.role === 'agent' || admin.isEliteAgent) return false;
         if (admin.role === 'superadmin') return true;
         if (item.label === 'Staff') return false;
 
@@ -155,6 +161,9 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
     };
 
     const getFilteredMenuItems = () => {
+        if (admin && (admin.role === 'agent' || admin.isEliteAgent)) {
+            return agentMenuItems;
+        }
         return menuItems
             .filter(isItemVisible)
             .map(item => {

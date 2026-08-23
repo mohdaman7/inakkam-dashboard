@@ -77,7 +77,10 @@ export default function Header({ onMenuToggle, onToggleCollapse, darkMode, onDar
         }
     };
 
-    const currentTitle = pageTitleMap[location.pathname] || 'Inakkam Admin';
+    const isAgent = admin?.role === 'agent' || admin?.isEliteAgent;
+    const currentTitle = isAgent 
+        ? (pageTitleMap[location.pathname] === 'Dashboard Overview' ? 'Elite Agent Portal' : pageTitleMap[location.pathname] || 'Elite Agent Portal')
+        : (pageTitleMap[location.pathname] || 'Inakkam Admin');
 
     return (
         <header className={`header ${collapsed ? 'collapsed' : ''}`}>
@@ -109,13 +112,15 @@ export default function Header({ onMenuToggle, onToggleCollapse, darkMode, onDar
             </div>
 
             <div className="header-right">
-                <button
-                    className="header-icon-btn header-kyc-btn"
-                    onClick={() => navigate('/verification-list')}
-                    title="KYC Verifications"
-                >
-                    <MdVerifiedUser />
-                </button>
+                {!isAgent && (
+                    <button
+                        className="header-icon-btn header-kyc-btn"
+                        onClick={() => navigate('/verification-list')}
+                        title="KYC Verifications"
+                    >
+                        <MdVerifiedUser />
+                    </button>
+                )}
 
                 <button className="header-icon-btn" onClick={onDarkModeToggle} title="Toggle theme">
                     {darkMode ? <MdLightMode /> : <MdDarkMode />}
@@ -139,7 +144,7 @@ export default function Header({ onMenuToggle, onToggleCollapse, darkMode, onDar
                         </div>
                         <div className="header-admin-details">
                             <span className="header-admin-name">{admin?.name || 'Administrator'}</span>
-                            <span className="header-admin-role">{admin?.role || 'Super Admin'}</span>
+                            <span className="header-admin-role">{isAgent ? 'Elite Agent' : (admin?.role || 'Super Admin')}</span>
                         </div>
                     </button>
 
@@ -148,7 +153,7 @@ export default function Header({ onMenuToggle, onToggleCollapse, darkMode, onDar
                             <div className="header-dropdown-info">
                                 <div className="header-dropdown-name">{admin?.name || 'Administrator'}</div>
                                 <div className="header-dropdown-email">{admin?.email || 'admin@inakkam.com'}</div>
-                                <div className="header-dropdown-role">{admin?.role || 'Super Admin'}</div>
+                                <div className="header-dropdown-role">{isAgent ? 'Elite Agent' : (admin?.role || 'Super Admin')}</div>
                             </div>
                             <div className="header-dropdown-divider" />
                             <button className="header-dropdown-item" onClick={() => { setDropdownOpen(false); navigate('/settings'); }}>
