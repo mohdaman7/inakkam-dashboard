@@ -287,6 +287,19 @@ export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose
                         );
                     })}
                 </nav>
+
+                {!collapsed && admin && (admin.role === 'agent' || admin.isEliteAgent) && (
+                    <div className="sidebar-agent-lounge-card">
+                        <div className="sal-avatar-wrap">
+                            <img src={admin?.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=300'} alt={admin?.name || 'Agent'} />
+                            <span className="sal-online-dot" />
+                        </div>
+                        <div className="sal-info">
+                            <span className="sal-name">{admin?.name || 'Anjali Nair'}</span>
+                            <span className="sal-role">Verified Elite Agent</span>
+                        </div>
+                    </div>
+                )}
             </aside>
         </>
     );
