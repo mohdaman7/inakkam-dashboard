@@ -6,7 +6,7 @@ import {
     MdFavorite, MdQuestionAnswer, MdStar, MdLocalOffer, MdPeople,
     MdPayment, MdPersonAdd, MdReport, MdPages, MdAccountBalanceWallet,
     MdList, MdNotifications, MdAdd, MdVerifiedUser, MdSettings, MdChevronRight,
-    MdSecurity
+    MdSecurity, MdChat, MdVideocam, MdExplore, MdCall, MdFlashOn
 } from 'react-icons/md';
 import inakkamLogo from '../../assets/inakkam-logo-icon.png';
 import './Sidebar.css';
@@ -107,8 +107,11 @@ const menuItems = [
 ];
 
 const agentMenuItems = [
-    { label: 'Agent Portal', icon: <MdDashboard />, path: '/' },
-    { label: 'Settings', icon: <MdSettings />, path: '/settings' },
+    { label: 'Earnings Overview', icon: <MdDashboard />, path: '/' },
+    { label: 'Live Chat & Leads', icon: <MdChat />, path: '/agent/chat' },
+    { label: 'Discover Members', icon: <MdExplore />, path: '/agent/discover' },
+    { label: 'Call Logs & History', icon: <MdCall />, path: '/agent/calls' },
+    { label: 'Profile & Settings', icon: <MdSettings />, path: '/settings' },
 ];
 
 export default function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }) {

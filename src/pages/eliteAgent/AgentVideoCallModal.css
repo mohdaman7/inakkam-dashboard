@@ -1,0 +1,343 @@
+/* ═══════════════════════════════════════════════════════════════
+   ELITE AGENT VIDEO CALL STATION CSS
+   ═══════════════════════════════════════════════════════════════ */
+
+.agent-videocall-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(8, 7, 18, 0.94);
+    backdrop-filter: blur(20px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    animation: fadeInCall 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes fadeInCall {
+    from { opacity: 0; transform: scale(0.97); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.agent-videocall-container {
+    width: 100%;
+    max-width: 1050px;
+    height: 90vh;
+    max-height: 720px;
+    background: #0f0d1b;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.8), 0 0 40px rgba(251, 111, 146, 0.15);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ── Top Floating Status Bar ── */
+.call-header-bar {
+    position: absolute;
+    top: 20px;
+    left: 24px;
+    right: 24px;
+    z-index: 20;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    pointer-events: none;
+}
+
+.call-user-tag {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(15, 13, 27, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 8px 16px;
+    border-radius: 40px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.call-user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid var(--primary);
+}
+
+.call-user-info h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.call-user-info span {
+    font-size: 0.72rem;
+    color: #00d68f;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.call-live-ticker {
+    pointer-events: auto;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: rgba(15, 13, 27, 0.75);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 8px 18px;
+    border-radius: 40px;
+}
+
+.call-timer-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #ff4757;
+    font-weight: 800;
+    font-size: 0.88rem;
+    font-family: monospace;
+}
+
+.call-timer-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #ff4757;
+    animation: pulseDot 1.2s infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+.call-earnings-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, rgba(255, 212, 59, 0.2), rgba(251, 111, 146, 0.2));
+    border: 1px solid rgba(255, 212, 59, 0.4);
+    padding: 4px 10px;
+    border-radius: 20px;
+    color: #ffd43b;
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+/* ── Main Video Area ── */
+.call-video-grid {
+    flex: 1;
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: #080612;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.remote-video-frame {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remote-placeholder-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    text-align: center;
+    color: #fff;
+    z-index: 5;
+}
+
+.remote-avatar-pulse {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 3px solid var(--primary);
+    box-shadow: 0 0 40px rgba(251, 111, 146, 0.4);
+    position: relative;
+    overflow: hidden;
+}
+
+.remote-avatar-pulse img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Self Picture-in-Picture */
+.self-pip-window {
+    position: absolute;
+    bottom: 100px;
+    right: 24px;
+    width: 200px;
+    height: 140px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    background: #141224;
+    z-index: 25;
+    transition: all 0.3s ease;
+}
+
+.self-pip-window:hover {
+    transform: scale(1.03);
+    border-color: var(--primary);
+}
+
+.self-pip-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transform: scaleX(-1);
+}
+
+.self-pip-label {
+    position: absolute;
+    bottom: 6px;
+    left: 8px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #fff;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+/* ── Bottom Floating Controls ── */
+.call-controls-dock {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 30;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: rgba(15, 13, 27, 0.85);
+    backdrop-filter: blur(16px);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    padding: 10px 20px;
+    border-radius: 50px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.call-control-btn {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.call-control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.08);
+}
+
+.call-control-btn.active-off {
+    background: rgba(255, 71, 87, 0.2);
+    border-color: #ff4757;
+    color: #ff4757;
+}
+
+.call-end-btn {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    background: #ff4757;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(255, 71, 87, 0.4);
+    transition: all 0.2s ease;
+}
+
+.call-end-btn:hover {
+    background: #ff2a3f;
+    transform: scale(1.1);
+}
+
+/* ── Settlement Receipt Modal ── */
+.call-receipt-card {
+    background: #151329;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 20px;
+    padding: 32px;
+    width: 100%;
+    max-width: 440px;
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    animation: fadeInCall 0.3s ease;
+}
+
+.receipt-badge-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    background: rgba(0, 214, 143, 0.15);
+    border: 2px solid #00d68f;
+    color: #00d68f;
+    font-size: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+}
+
+.receipt-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 20px 0 24px 0;
+}
+
+.receipt-stat-box {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 12px;
+    text-align: center;
+}
+
+.receipt-stat-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+}
+
+.receipt-stat-value {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #fff;
+}

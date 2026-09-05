@@ -36,6 +36,9 @@ import EliteAgentList from './pages/eliteAgent/EliteAgentList';
 import EliteAgentAdd from './pages/eliteAgent/EliteAgentAdd';
 import EliteAgentDetails from './pages/eliteAgent/EliteAgentDetails';
 import EliteAgentPortal from './pages/eliteAgent/EliteAgentPortal';
+import AgentChat from './pages/eliteAgent/AgentChat';
+import AgentDiscover from './pages/eliteAgent/AgentDiscover';
+import AgentCallLogs from './pages/eliteAgent/AgentCallLogs';
 
 function HomeRoute() {
   const { admin } = useAuth();
@@ -142,6 +145,9 @@ export default function App() {
         <Route path="elite-agent/:id" element={<PermissionRoute moduleKey="eliteAgent" op="Read"><EliteAgentDetails /></PermissionRoute>} />
         <Route path="verification-list" element={<PermissionRoute moduleKey="userList" op="Read"><VerificationList /></PermissionRoute>} />
         <Route path="push-notification" element={<PermissionRoute moduleKey="notification" op="Write"><PushNotification /></PermissionRoute>} />
+        <Route path="agent/chat" element={<AgentChat />} />
+        <Route path="agent/discover" element={<AgentDiscover />} />
+        <Route path="agent/calls" element={<AgentCallLogs />} />
         <Route path="settings" element={<ProfileSettings />} />
       </Route>
     </Routes>

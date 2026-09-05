@@ -1,19 +1,23 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     MdOutlineMonetizationOn, MdAccountBalanceWallet, MdTrendingUp,
     MdPayments, MdVerified, MdContentCopy, MdSend, MdHistory,
     MdAccountBalance, MdQrCode, MdCheckCircle, MdHourglassTop,
     MdOutlineLaunch, MdRefresh, MdCall, MdVideocam, MdChat,
-    MdCardGiftcard, MdCalculate, MdEdit, MdCheck,
-    MdArrowForward, MdInfoOutline, MdSignalWifiStatusbar4Bar
+    MdCardGiftcard, MdCalculate, MdEdit, MdCheck, MdExplore,
+    MdArrowForward, MdInfoOutline, MdSignalWifiStatusbar4Bar, MdFlashOn
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
+import AgentVideoCallModal from './AgentVideoCallModal';
 import './EliteAgentPortal.css';
 
 export default function EliteAgentPortal() {
     const { admin } = useAuth();
+    const navigate = useNavigate();
+    const [videoModalOpen, setVideoModalOpen] = useState(false);
 
     const [loading, setLoading] = useState(true);
     const [summary, setSummary] = useState({
@@ -259,12 +263,113 @@ export default function EliteAgentPortal() {
                     </div>
                 </div>
 
-                <button
-                    className="btn-request-withdrawal-hero"
-                    onClick={() => setShowWithdrawModal(true)}
+                <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                    <button
+                        className="btn btn-primary"
+                        onClick={() => navigate('/agent/chat')}
+                        style={{ display: 'flex', alignItems: 'center', gap: 6, borderRadius: 12, padding: '10px 18px', fontWeight: 700 }}
+                    >
+                        <MdChat size={18} /> Open Live Chat Hub
+                    </button>
+                    <button
+                        className="btn-request-withdrawal-hero"
+                        onClick={() => setShowWithdrawModal(true)}
+                    >
+                        <MdAccountBalanceWallet /> Request Withdrawal
+                    </button>
+                </div>
+            </div>
+
+            {/* AGENT WORKSTATION JUMP CARDS */}
+            <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                gap: 16,
+                marginBottom: 24
+            }}>
+                <div
+                    className="card"
+                    onClick={() => navigate('/agent/chat')}
+                    style={{
+                        padding: '20px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        background: 'linear-gradient(135deg, rgba(251, 111, 146, 0.08) 0%, rgba(150, 16, 255, 0.04) 100%)',
+                        border: '1px solid rgba(251, 111, 146, 0.25)',
+                        transition: 'all var(--transition-fast)'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
                 >
-                    <MdAccountBalanceWallet /> Request Withdrawal
-                </button>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, var(--primary) 0%, #9610ff 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.3rem' }}>
+                            <MdChat />
+                        </div>
+                        <div>
+                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>Live Chat Hub</h4>
+                            <span style={{ fontSize: '0.74rem', color: '#00d68f', fontWeight: 600 }}>● 3 Active Customer Inquiries</span>
+                        </div>
+                    </div>
+                    <MdArrowForward style={{ color: 'var(--primary)', fontSize: '1.2rem' }} />
+                </div>
+
+                <div
+                    className="card"
+                    onClick={() => setVideoModalOpen(true)}
+                    style={{
+                        padding: '20px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        background: 'linear-gradient(135deg, rgba(255, 71, 87, 0.08) 0%, rgba(251, 111, 146, 0.04) 100%)',
+                        border: '1px solid rgba(255, 71, 87, 0.25)',
+                        transition: 'all var(--transition-fast)'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #ff4757 0%, #fb6f92 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.3rem' }}>
+                            <MdVideocam />
+                        </div>
+                        <div>
+                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>1-on-1 Video Hub</h4>
+                            <span style={{ fontSize: '0.74rem', color: '#ffd43b', fontWeight: 700 }}>₹35 / min Live Earning Rate</span>
+                        </div>
+                    </div>
+                    <MdArrowForward style={{ color: '#ff4757', fontSize: '1.2rem' }} />
+                </div>
+
+                <div
+                    className="card"
+                    onClick={() => navigate('/agent/discover')}
+                    style={{
+                        padding: '20px 24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        background: 'linear-gradient(135deg, rgba(0, 214, 143, 0.08) 0%, rgba(0, 149, 255, 0.04) 100%)',
+                        border: '1px solid rgba(0, 214, 143, 0.25)',
+                        transition: 'all var(--transition-fast)'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: 12, background: 'linear-gradient(135deg, #00d68f 0%, #0095ff 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.3rem' }}>
+                            <MdExplore />
+                        </div>
+                        <div>
+                            <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>Discover Members</h4>
+                            <span style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Browse active client leads</span>
+                        </div>
+                    </div>
+                    <MdArrowForward style={{ color: '#00d68f', fontSize: '1.2rem' }} />
+                </div>
             </div>
 
             {/* KEY METRICS GRID */}
@@ -679,6 +784,24 @@ export default function EliteAgentPortal() {
                     </div>
                 </div>
             )}
+
+            {/* Live Video Call Station Modal */}
+            <AgentVideoCallModal
+                isOpen={videoModalOpen}
+                onClose={() => setVideoModalOpen(false)}
+                targetUser={{
+                    name: 'Aarav Shah (VIP Lead)',
+                    photos: ['https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500']
+                }}
+                onEarningsEarned={(coins) => {
+                    setSummary(prev => ({
+                        ...prev,
+                        earnedCoins: prev.earnedCoins + coins,
+                        todayCoins: prev.todayCoins + coins
+                    }));
+                    toast.success(`🎉 Earned +${coins} coins from video session!`, { icon: '💰' });
+                }}
+            />
         </div>
     );
 }
