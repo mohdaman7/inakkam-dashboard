@@ -18,6 +18,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import api from "../utils/api";
 import toast from "react-hot-toast";
 import { getSocket } from "../utils/socket";
+import "./VideoCall.css";
 
 const VideoCall = ({
   roomId,
@@ -1749,67 +1750,60 @@ const VideoCall = ({
   }, [isMutedSound]);
 
   return createPortal(
-    <div className="fixed inset-0 top-0 left-0 right-0 bottom-0 z-[99999] flex bg-[#0A0A0A] text-white overflow-hidden font-sans select-none h-[100dvh] w-screen">
+    <div className="enx-video-modal-overlay">
       {/* Radial glow backgrounds */}
-      <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-[#D51659]/10 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-[#B44DDC]/10 blur-[120px] pointer-events-none" />
+      <div className="enx-glow-bg-1" />
+      <div className="enx-glow-bg-2" />
 
       {/* ─── Connecting screen ─────────────────────────────── */}
       {callStatus === "connecting" && (
-        <div className="flex-1 h-full w-full relative flex flex-col justify-between overflow-hidden">
+        <div className="enx-connecting-screen">
           {/* If video call, show live camera preview fullscreen */}
           {callType === "video" ? (
-            <div className="absolute inset-0 z-0 bg-[#121212]">
+            <div className="enx-connecting-bg-video">
               {/* EnableX Local Preview Container */}
               <div
                 id="connecting_local_video"
-                className="absolute inset-0 w-full h-full [&_*]:!w-full [&_*]:!h-full [&_video]:!object-cover [&_video]:scale-x-[-1]"
+                style={{ width: '100%', height: '100%' }}
               />
-              {/* Subtle dark vignette overlay */}
-              <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/80 pointer-events-none" />
+              <div className="enx-connecting-vignette" />
             </div>
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-b from-[#150A1A] via-[#0A0A0A] to-[#1A0A15]" />
+            <div className="enx-connecting-bg-audio" />
           )}
 
           {/* Top header on connecting screen */}
-          <div className="relative z-10 p-4 sm:p-6 flex items-center justify-between">
-            <div className="flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 sm:px-3.5 py-1.5 rounded-full border border-white/10 shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-[#D51659] animate-ping" />
-              <span className="text-xs font-bold text-white tracking-wide">
-                {isCaller ? "Calling..." : "Connecting..."}
-              </span>
+          <div className="enx-connecting-top-header">
+            <div className="enx-status-pill">
+              <span className="enx-status-dot-ping" />
+              <span>{isCaller ? "Calling..." : "Connecting..."}</span>
             </div>
-            <span className="text-xs font-semibold text-slate-300 bg-black/40 backdrop-blur-md px-3 sm:px-3.5 py-1.5 rounded-full border border-white/10 shadow-sm">
+            <span className="enx-call-type-badge">
               {callType === "video" ? "Video Call" : "Voice Call"}
             </span>
           </div>
 
           {/* Center Glass Card with Remote User Info & Status */}
-          <div className="relative z-10 flex flex-col items-center justify-center px-4 sm:px-6 my-auto">
-            <div className="bg-black/50 backdrop-blur-2xl border border-white/15 p-6 sm:p-8 rounded-3xl sm:rounded-[2rem] shadow-[0_20px_60px_rgba(0,0,0,0.6)] flex flex-col items-center max-w-xs sm:max-w-sm w-full transition-all">
+          <div className="enx-connecting-center-card">
+            <div className="enx-connecting-glass-box">
               {/* Pulsing Avatar */}
-              <div className="relative mb-5 sm:mb-6 flex items-center justify-center">
-                <span className="absolute w-28 h-28 sm:w-36 sm:h-36 rounded-full bg-[#D51659]/30 blur-2xl animate-pulse pointer-events-none" />
-                <span
-                  className="absolute w-24 h-24 sm:w-32 sm:h-32 rounded-full border border-[#D51659]/60 animate-ping pointer-events-none"
-                  style={{ animationDuration: "2.5s" }}
-                />
-                <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-[#D51659] to-[#B44DDC] shadow-2xl relative z-10">
+              <div className="enx-connecting-avatar-wrap">
+                <div className="enx-connecting-avatar-glow" />
+                <div className="enx-connecting-avatar-img-wrap">
                   <img
                     src={remoteUserPhoto || "https://via.placeholder.com/150"}
                     alt={remoteUserName}
-                    className="w-full h-full rounded-full object-cover border-2 border-black bg-black"
+                    className="enx-connecting-avatar-img"
                   />
                 </div>
               </div>
 
-              <h3 className="text-xl sm:text-2xl font-black text-white text-center drop-shadow-md px-2 truncate max-w-full">
+              <h3 className="enx-connecting-user-name">
                 {remoteUserName}
               </h3>
 
-              <div className="flex items-center gap-2 mt-3 text-slate-300 text-xs font-medium bg-white/5 px-3.5 py-1.5 rounded-full border border-white/10 backdrop-blur-md">
-                <div className="w-3 h-3 border-2 border-[#D51659] border-t-transparent rounded-full animate-spin" />
+              <div className="enx-connecting-subtext">
+                <div style={{ width: 12, height: 12, border: '2px solid #d51659', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
                 <span>
                   {isCaller
                     ? "Waiting for answer..."
@@ -1820,50 +1814,31 @@ const VideoCall = ({
           </div>
 
           {/* Bottom Controls Bar on Connecting Screen */}
-          <div className="relative z-10 p-4 sm:p-6 pb-8 sm:pb-10 flex items-center justify-center gap-4 sm:gap-6">
-            {/* Mic toggle */}
+          <div className="enx-connecting-controls">
             <button
               onClick={toggleMic}
-              className={`p-3.5 sm:p-4 rounded-full transition-all duration-300 backdrop-blur-md ${
-                micActive
-                  ? "bg-black/60 text-white border border-white/15 hover:bg-black/80"
-                  : "bg-[#D51659]/40 text-[#D51659] border border-[#D51659] hover:bg-[#D51659]/50"
-              }`}
+              className={`enx-ctrl-btn ${!micActive ? 'off' : ''}`}
               title={micActive ? "Mute Microphone" : "Unmute Microphone"}
             >
-              {micActive ? (
-                <Mic className="w-5 h-5" />
-              ) : (
-                <MicOff className="w-5 h-5" />
-              )}
+              {micActive ? <Mic size={20} /> : <MicOff size={20} />}
             </button>
 
-            {/* Video toggle (for video call) */}
             {callType === "video" && (
               <button
                 onClick={toggleVideo}
-                className={`p-3.5 sm:p-4 rounded-full transition-all duration-300 backdrop-blur-md ${
-                  videoActive
-                    ? "bg-black/60 text-white border border-white/15 hover:bg-black/80"
-                    : "bg-[#D51659]/40 text-[#D51659] border border-[#D51659] hover:bg-[#D51659]/50"
-                }`}
+                className={`enx-ctrl-btn ${!videoActive ? 'off' : ''}`}
                 title={videoActive ? "Turn Camera Off" : "Turn Camera On"}
               >
-                {videoActive ? (
-                  <VideoIcon className="w-5 h-5" />
-                ) : (
-                  <VideoOff className="w-5 h-5" />
-                )}
+                {videoActive ? <VideoIcon size={20} /> : <VideoOff size={20} />}
               </button>
             )}
 
-            {/* Cancel / End Call Button */}
             <button
               onClick={handleDisconnect}
-              className="p-4 sm:p-4.5 rounded-full bg-[#D51659] hover:bg-[#D51659]/90 text-white hover:scale-105 active:scale-95 transition-all shadow-[0_4px_24px_rgba(213,22,89,0.5)] flex items-center justify-center cursor-pointer"
+              className="enx-ctrl-btn-end"
               title="Cancel Call"
             >
-              <PhoneOff className="w-6 h-6" />
+              <PhoneOff size={24} />
             </button>
           </div>
         </div>
@@ -1871,132 +1846,110 @@ const VideoCall = ({
 
       {/* ─── Active Call Screen ─────────────────────────────── */}
       {callStatus === "connected" && (
-        <div className="flex-1 flex relative h-full w-full overflow-hidden">
+        <div className="enx-active-call-screen">
           {/* ── Main viewport ─────────────────────────── */}
           {callType === "audio" ? (
             /* ── Audio call UI ── */
-            <div className="flex-1 h-full relative overflow-hidden flex flex-col items-center justify-center p-4 sm:p-6 bg-gradient-to-b from-[#150A1A] via-[#0A0A0A] to-[#1A0A15]">
+            <div className="enx-audio-viewport">
               {/* Hidden audio player container for remote WebRTC stream */}
               <div
                 id="remote_audio_player"
-                className="absolute left-0 top-0 w-1 h-1 overflow-hidden pointer-events-none"
-                style={{ opacity: 0.01 }}
+                style={{ position: 'absolute', left: 0, top: 0, width: 1, height: 1, opacity: 0.01, pointerEvents: 'none' }}
               />
 
-              {/* Main Center Profile Container — perfectly centered between top bar and bottom HUD */}
-              <div className="flex flex-col items-center max-w-sm sm:max-w-md md:max-w-lg w-full z-10 my-auto pb-20 sm:pb-24">
-                {/* Animated Multi-Ring Glowing Avatar */}
-                <div className="relative mb-5 sm:mb-6 flex items-center justify-center">
-                  {/* Ambient Glow */}
-                  <div className="absolute w-48 h-48 sm:w-60 sm:h-60 md:w-72 md:h-72 rounded-full bg-gradient-to-tr from-[#D51659]/30 to-[#B44DDC]/30 blur-3xl animate-pulse pointer-events-none" />
-
-                  {/* Expanding Ping Ring */}
-                  <div
-                    className="absolute w-36 h-36 sm:w-48 sm:h-48 md:w-56 md:h-56 rounded-full border border-[#D51659]/40 animate-ping pointer-events-none"
-                    style={{ animationDuration: "3.2s" }}
+              {/* Main Center Profile Container */}
+              <div className="enx-audio-center-wrap">
+                <div className="enx-audio-avatar-ring">
+                  <img
+                    src={remoteUserPhoto || "https://via.placeholder.com/150"}
+                    alt={remoteUserName}
+                    className="enx-audio-avatar-img"
                   />
-
-                  {/* Outer Gradient Border Ring & Avatar */}
-                  <div className="w-32 h-32 sm:w-40 sm:h-40 md:w-48 md:h-48 rounded-full p-1.5 bg-gradient-to-tr from-[#D51659] via-[#EC3F7B] to-[#B44DDC] shadow-[0_0_60px_rgba(213,22,89,0.4)] relative z-10">
-                    <img
-                      src={remoteUserPhoto || "https://via.placeholder.com/150"}
-                      alt={remoteUserName}
-                      className="w-full h-full rounded-full object-cover border-2 border-black bg-black"
-                    />
-                  </div>
                 </div>
 
-                {/* User Name */}
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-white text-center tracking-tight drop-shadow-lg px-4 truncate max-w-full">
+                <h2 className="enx-audio-user-name">
                   {remoteUserName}
                 </h2>
 
-                {/* Live Call Duration Badge */}
-                <div className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/10 border border-white/15 backdrop-blur-xl text-emerald-400 text-xs sm:text-sm font-semibold shadow-md">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <div className="enx-audio-status-badge">
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00d68f' }} />
                   <span>Voice Call Connected ({formatTime(duration)})</span>
                 </div>
 
-                {/* Dynamic Responsive Soundwave Visualizer — placed directly below status pill */}
-                <div className="flex items-center justify-center gap-1.5 sm:gap-2 mt-5 sm:mt-6 h-8 sm:h-10 w-full max-w-xs sm:max-w-sm px-4">
+                {/* Soundwave Visualizer */}
+                <div className="enx-soundwave-row">
                   {[35, 70, 25, 85, 45, 95, 50, 75, 100, 60, 80, 30, 65, 40, 90, 55].map(
                     (h, i) => (
                       <span
                         key={i}
-                        className="w-1.5 sm:w-2 bg-gradient-to-t from-[#D51659] via-[#EC3F7B] to-[#B44DDC] rounded-full transition-all duration-300 shadow-sm"
+                        className="enx-soundwave-bar"
                         style={{
                           height: micActive ? `${h}%` : "15%",
                           opacity: micActive ? 0.95 : 0.25,
-                          animation: micActive
-                            ? `pulse 1.2s ease-in-out infinite`
-                            : "none",
-                          animationDelay: `${(i * 80) % 600}ms`,
                         }}
                       />
                     ),
                   )}
                 </div>
 
-                {/* Enable / Boost Sound Button */}
                 <button
                   type="button"
                   onClick={handleUnlockAudio}
-                  className="mt-4 px-4 py-1.5 rounded-full bg-white/5 hover:bg-[#D51659]/20 border border-white/10 hover:border-[#D51659]/40 text-slate-300 hover:text-white text-xs font-medium flex items-center gap-1.5 backdrop-blur-md transition-all shadow-sm active:scale-95 cursor-pointer"
+                  style={{
+                    marginTop: 18,
+                    padding: '8px 16px',
+                    borderRadius: 20,
+                    background: 'rgba(255,255,255,0.06)',
+                    border: '1px solid rgba(255,255,255,0.12)',
+                    color: '#cbd5e1',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 6
+                  }}
                   title="Click if you cannot hear remote audio"
                 >
-                  <Volume2 className="w-3.5 h-3.5 text-[#D51659]" />
+                  <Volume2 size={14} style={{ color: '#d51659' }} />
                   <span>Enable / Boost Sound</span>
                 </button>
               </div>
             </div>
           ) : (
             /* ── Video call main UI ── */
-            <div className="flex-1 h-full bg-[#121212] relative overflow-hidden">
-              {/* EnableX Remote Video Container — fullscreen */}
+            <div className="enx-video-viewport">
+              {/* EnableX Remote Video Container */}
               <div
                 id="remote_video_player"
-                className="absolute inset-0 w-full h-full overflow-hidden bg-black z-0"
+                className="enx-remote-video-container"
               />
 
               {/* Waiting for remote placeholder */}
               {!remoteStreamActive && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#121212] z-10 pointer-events-none p-4 text-center">
+                <div className="enx-waiting-remote-box">
                   <img
                     src={remoteUserPhoto || "https://via.placeholder.com/150"}
                     alt={remoteUserName}
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-2 border-white/10 mb-3 opacity-50 shadow-lg"
+                    className="enx-waiting-avatar"
                   />
-                  <p className="text-slate-400 text-xs sm:text-sm">
+                  <p style={{ color: '#94a3b8', fontSize: '0.85rem' }}>
                     Connecting video stream with {remoteUserName}...
                   </p>
                   {noRemoteVideoCountdown !== null && (
-                    <p className="text-rose-400 text-xs font-bold mt-2 animate-pulse bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/20">
+                    <p style={{ color: '#ff4757', fontWeight: 'bold', marginTop: 8, fontSize: '0.8rem' }}>
                       ⚠️ Camera/face must be active in {noRemoteVideoCountdown}s
                     </p>
                   )}
                 </div>
               )}
 
-              {/* Warning banner when opponent face/video is not detected */}
-              {noRemoteVideoCountdown !== null && (
-                <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30 bg-rose-600/90 text-white px-4 py-1.5 rounded-full backdrop-blur-md shadow-2xl flex items-center gap-2 border border-rose-400/40 animate-pulse text-[11px] sm:text-xs font-bold pointer-events-auto">
-                  <VideoOff className="w-3.5 h-3.5 text-white shrink-0" />
-                  <span>
-                    Opponent camera/face not detected. Ending call in {noRemoteVideoCountdown}s...
-                  </span>
-                </div>
-              )}
-
-              {/* EnableX Local camera PiP — top-right corner */}
-              <div
-                className="absolute top-4 sm:top-6 right-4 sm:right-6 w-24 sm:w-32 md:w-40 rounded-2xl overflow-hidden border border-white/20 shadow-2xl bg-[#1a1a1a] z-20"
-                style={{ aspectRatio: "9/16" }}
-              >
+              {/* EnableX Local camera PiP */}
+              <div className="enx-local-pip-box">
                 <div
                   id="local_pip_video"
-                  className="w-full h-full [&_*]:!w-full [&_*]:!h-full [&_video]:!object-cover [&_video]:scale-x-[-1]"
+                  style={{ width: '100%', height: '100%' }}
                 />
-                <div className="absolute bottom-2 left-2 text-[9px] font-semibold bg-black/70 px-1.5 py-0.5 rounded text-slate-200 backdrop-blur-sm">
+                <div className="enx-pip-tag">
                   You
                 </div>
               </div>
@@ -2004,112 +1957,70 @@ const VideoCall = ({
           )}
 
           {/* ── Top overlay ─── */}
-          <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-b from-black/70 to-transparent flex items-center justify-between pointer-events-none z-25">
+          <div className="enx-hud-top-bar">
             {callType === "video" ? (
-              <div className="flex items-center gap-3 pointer-events-auto">
-                <div>
-                  <h4 className="font-extrabold text-sm sm:text-base text-white drop-shadow-md">
-                    {remoteUserName}
-                  </h4>
-                  <p className="text-[10px] sm:text-xs font-bold text-[#D51659] uppercase tracking-wider drop-shadow-sm flex items-center gap-1.5">
-                    <span className="inline-block w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
-                    Live Call · {formatTime(duration)}
-                  </p>
+              <div className="enx-hud-user-info">
+                <h4>{remoteUserName}</h4>
+                <div className="enx-hud-live-tag">
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#00d68f' }} />
+                  Live Call · {formatTime(duration)}
                 </div>
               </div>
             ) : (
-              <div className="flex items-center gap-2 pointer-events-auto">
-                <div className="flex items-center gap-2 bg-white/5 backdrop-blur-md px-3 sm:px-3.5 py-1.5 rounded-full border border-white/10 shadow-sm">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                  <span className="text-[11px] sm:text-xs font-semibold text-slate-300 tracking-wide">
-                    Inakkam HD Voice
-                  </span>
-                </div>
+              <div className="enx-hud-live-tag" style={{ color: '#00d68f' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00d68f' }} />
+                Inakkam HD Voice
               </div>
             )}
 
-            <div className="flex items-center gap-2 pointer-events-auto">
+            <div>
               <button
                 onClick={() => setIsMutedSound((m) => !m)}
-                className="p-2 sm:p-2.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 text-slate-300 hover:text-white transition-all backdrop-blur-md"
-                title={
-                  isMutedSound ? "Unmute Remote Audio" : "Mute Remote Audio"
-                }
+                className="enx-ctrl-btn"
+                style={{ width: 40, height: 40 }}
+                title={isMutedSound ? "Unmute Audio" : "Mute Audio"}
               >
-                {isMutedSound ? (
-                  <VolumeX className="w-4 h-4 text-[#D51659]" />
-                ) : (
-                  <Volume2 className="w-4 h-4" />
-                )}
+                {isMutedSound ? <VolumeX size={18} style={{ color: '#d51659' }} /> : <Volume2 size={18} />}
               </button>
             </div>
           </div>
 
           {/* ── Bottom controls HUD ──────────────────────── */}
-          <div className="absolute bottom-6 sm:bottom-8 left-1/2 -translate-x-1/2 px-4 sm:px-6 py-3 sm:py-3.5 bg-black/60 border border-white/15 backdrop-blur-2xl rounded-full flex items-center gap-3.5 sm:gap-6 md:gap-8 z-25 shadow-[0_16px_50px_rgba(0,0,0,0.6)] max-w-[calc(100vw-2rem)]">
-            {/* Mic toggle */}
+          <div className="enx-hud-bottom-dock">
             <button
               onClick={toggleMic}
-              className={`p-3 sm:p-3.5 rounded-full transition-all duration-300 backdrop-blur-md ${
-                micActive
-                  ? "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-                  : "bg-[#D51659]/30 text-[#D51659] border border-[#D51659]/60 hover:bg-[#D51659]/40"
-              }`}
+              className={`enx-ctrl-btn ${!micActive ? 'off' : ''}`}
               title={micActive ? "Mute Microphone" : "Unmute Microphone"}
             >
-              {micActive ? (
-                <Mic className="w-5 h-5" />
-              ) : (
-                <MicOff className="w-5 h-5" />
-              )}
+              {micActive ? <Mic size={20} /> : <MicOff size={20} />}
             </button>
 
-            {/* Video toggle (only for video calls) */}
             {callType === "video" && (
               <button
                 onClick={toggleVideo}
-                className={`p-3 sm:p-3.5 rounded-full transition-all duration-300 backdrop-blur-md ${
-                  videoActive
-                    ? "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-                    : "bg-[#D51659]/30 text-[#D51659] border border-[#D51659]/60 hover:bg-[#D51659]/40"
-                }`}
+                className={`enx-ctrl-btn ${!videoActive ? 'off' : ''}`}
                 title={videoActive ? "Turn Camera Off" : "Turn Camera On"}
               >
-                {videoActive ? (
-                  <VideoIcon className="w-5 h-5" />
-                ) : (
-                  <VideoOff className="w-5 h-5" />
-                )}
+                {videoActive ? <VideoIcon size={20} /> : <VideoOff size={20} />}
               </button>
             )}
 
-            {/* In-call text chat */}
             <button
               onClick={() => setShowChat(!showChat)}
-              className={`p-3 sm:p-3.5 rounded-full transition-all duration-300 relative backdrop-blur-md ${
-                showChat
-                  ? "bg-purple-500/30 text-purple-300 border border-purple-500/50 hover:bg-purple-500/40"
-                  : "bg-white/10 text-white hover:bg-white/20 border border-white/10"
-              }`}
+              className={`enx-ctrl-btn ${showChat ? 'off' : ''}`}
               title="Session Chat"
             >
-              <MessageSquare className="w-5 h-5" />
-              {!showChat &&
-                chatMessages.filter((m) => m.sender === "remote").length >
-                  0 && (
-                  <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[#D51659] rounded-full border-2 border-black animate-pulse" />
-                )}
+              <MessageSquare size={20} />
             </button>
 
-            <span className="w-[1px] h-6 bg-white/20" />
+            <span style={{ width: 1, height: 24, background: 'rgba(255,255,255,0.2)' }} />
 
-            {/* End call */}
             <button
               onClick={handleDisconnect}
-              className="p-3.5 sm:p-4 rounded-full bg-[#D51659] hover:bg-[#D51659]/90 text-white hover:scale-105 active:scale-95 transition-all shadow-[0_4px_20px_rgba(213,22,89,0.5)] flex items-center justify-center cursor-pointer"
+              className="enx-ctrl-btn-end"
               title="Hang Up"
             >
-              <PhoneOff className="w-5 h-5 sm:w-6 sm:h-6" />
+              <PhoneOff size={22} />
             </button>
           </div>
 
@@ -2121,28 +2032,28 @@ const VideoCall = ({
                 animate={{ x: 0 }}
                 exit={{ x: "100%" }}
                 transition={{ type: "spring", damping: 25, stiffness: 200 }}
-                className="w-full sm:w-80 h-full bg-[#0F0F16]/95 border-l border-white/10 backdrop-blur-xl flex flex-col z-30 relative shadow-[-10px_0_30px_rgba(0,0,0,0.5)]"
+                className="enx-session-chat-drawer"
               >
                 {/* Chat header */}
-                <div className="h-16 px-4 border-b border-white/5 flex items-center justify-between bg-black/30">
-                  <div className="flex items-center gap-2">
-                    <MessageSquare className="w-4 h-4 text-[#D51659]" />
-                    <span className="font-extrabold text-sm tracking-wider uppercase">
+                <div className="enx-session-chat-header">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <MessageSquare size={16} style={{ color: '#d51659' }} />
+                    <span style={{ fontWeight: 800, fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                       Session Chat
                     </span>
                   </div>
                   <button
                     onClick={() => setShowChat(false)}
-                    className="p-1 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors"
+                    style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer' }}
                   >
-                    <X className="w-4 h-4" />
+                    <X size={18} />
                   </button>
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3.5 no-scrollbar">
+                <div className="enx-session-chat-messages">
                   {chatMessages.length === 0 && (
-                    <p className="text-center text-slate-600 text-xs mt-8">
+                    <p style={{ textAlign: 'center', color: '#64748b', fontSize: '0.8rem', marginTop: 32 }}>
                       Say hi to {remoteUserName}!
                     </p>
                   )}
@@ -2153,7 +2064,7 @@ const VideoCall = ({
                       return (
                         <div
                           key={msg.id}
-                          className="text-center text-[10px] text-slate-500 uppercase tracking-widest py-1"
+                          style={{ textAlign: 'center', fontSize: '0.65rem', color: '#64748b', textTransform: 'uppercase', padding: '4px 0' }}
                         >
                           {msg.text}
                         </div>
@@ -2162,21 +2073,15 @@ const VideoCall = ({
                     return (
                       <div
                         key={msg.id}
-                        className={`flex flex-col ${isMe ? "items-end" : "items-start"}`}
+                        className={`enx-session-chat-msg-row ${isMe ? 'me' : 'remote'}`}
                       >
-                        <span className="text-[9px] text-slate-500 font-semibold mb-0.5 px-1">
+                        <span style={{ fontSize: '0.65rem', color: '#64748b', marginBottom: 2 }}>
                           {msg.senderName}
                         </span>
-                        <div
-                          className={`p-2.5 rounded-2xl text-xs max-w-[85%] break-words leading-relaxed ${
-                            isMe
-                              ? "bg-gradient-to-tr from-[#D51659] to-[#EC3F7B] text-white rounded-br-sm"
-                              : "bg-white/10 text-white/90 rounded-bl-sm border border-white/10"
-                          }`}
-                        >
+                        <div className="enx-session-chat-bubble">
                           {msg.text}
                         </div>
-                        <span className="text-[9px] text-slate-600 mt-0.5 px-1">
+                        <span style={{ fontSize: '0.65rem', color: '#64748b', marginTop: 2 }}>
                           {msg.time}
                         </span>
                       </div>
@@ -2187,19 +2092,19 @@ const VideoCall = ({
                 {/* Chat input */}
                 <form
                   onSubmit={handleSendMessage}
-                  className="p-3 border-t border-white/5 flex gap-2 items-end bg-black/20"
+                  className="enx-session-chat-input-row"
                 >
                   <input
                     value={chatInput}
                     onChange={(e) => setChatInput(e.target.value)}
                     placeholder="Type a message..."
-                    className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-[#D51659]/40 transition-colors resize-none"
+                    className="enx-session-chat-input"
                   />
                   <button
                     type="submit"
-                    className="p-2 rounded-xl bg-[#D51659] text-white hover:bg-[#D51659]/90 transition-colors shrink-0"
+                    className="enx-session-chat-send-btn"
                   >
-                    <Send className="w-4 h-4" />
+                    <Send size={16} />
                   </button>
                 </form>
               </motion.div>

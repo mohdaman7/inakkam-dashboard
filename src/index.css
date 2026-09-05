@@ -24,25 +24,25 @@
   --coral-light: var(--rose-300);
   --coral-dark: var(--rose-500);
 
-  /* Dark Theme Backgrounds */
-  --bg-body: #0d0b14;
-  --bg-sidebar: #13101c;
-  --bg-card: #191424;
-  --bg-card-hover: #221b30;
-  --bg-input: #14101e;
-  --bg-header: #13101c;
-  --bg-modal: #191424;
+  /* Default Light Theme Backgrounds */
+  --bg-body: #fff4f6;                  /* Super clean soft blush white site background */
+  --bg-sidebar: #ffffff;
+  --bg-card: #ffffff;
+  --bg-card-hover: #fff0f3;            /* Soft rose card hover */
+  --bg-input: #ffffff;
+  --bg-header: rgba(255, 255, 255, 0.92); /* Glassmorphic clean white topbar header */
+  --bg-modal: #ffffff;
   --bg-lavender: var(--rose-100);
 
-  /* Dark Theme Text Colors */
-  --text-primary: #ffffff;
-  --text-secondary: var(--rose-300);   /* #ffb3c6 */
-  --text-muted: #a38996;
+  /* Default Light Theme Text Colors */
+  --text-primary: #2b111c;             /* Rich deep charcoal pink */
+  --text-secondary: #d84b70;
+  --text-muted: #9e6475;
   --text-white: #ffffff;
 
-  /* Dark Theme Borders */
-  --border-color: rgba(255, 179, 198, 0.15); /* Translucent #ffb3c6 */
-  --border-light: rgba(255, 179, 198, 0.28);
+  /* Default Light Theme Borders */
+  --border-color: #ffb3c6;             /* Pastel rose border */
+  --border-light: #ffc2d1;
 
   /* Status Accents */
   --success: #00d68f;
@@ -52,10 +52,10 @@
 
   /* Gradients */
   --gradient-primary: linear-gradient(135deg, #fb6f92 0%, #ff8fab 100%);
-  --gradient-sidebar: linear-gradient(135deg, #13101c 0%, #0d0b14 100%);
+  --gradient-sidebar: linear-gradient(135deg, #ffffff 0%, #fff4f6 100%);
   --gradient-success: linear-gradient(135deg, #00d68f 0%, #00b377 100%);
   --gradient-danger: linear-gradient(135deg, #ff3d71 0%, #db2c66 100%);
-  --gradient-card: linear-gradient(135deg, rgba(251, 111, 146, 0.1) 0%, rgba(255, 143, 171, 0.02) 100%);
+  --gradient-card: linear-gradient(135deg, rgba(251, 111, 146, 0.05) 0%, rgba(255, 229, 236, 0.3) 100%);
 
   /* Shadows */
   --shadow-sm: 0 2px 8px rgba(251, 111, 146, 0.08);
@@ -81,24 +81,47 @@
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ─── Light Mode Theme (Rose Palette: #ffe5ec, #ffc2d1, #ffb3c6, #ff8fab, #fb6f92) ─── */
-.admin-layout.light {
-  --bg-body: #fff4f6;                  /* Super clean soft blush white site background */
+/* ─── Dark Mode Overrides ─────────────────────────────────── */
+.admin-layout.dark,
+body.dark,
+html.dark {
+  --bg-body: #0d0b14;
+  --bg-sidebar: #13101c;
+  --bg-card: #191424;
+  --bg-card-hover: #221b30;
+  --bg-input: #14101e;
+  --bg-header: #13101c;
+  --bg-modal: #191424;
+
+  --text-primary: #ffffff;
+  --text-secondary: var(--rose-300);
+  --text-muted: #a38996;
+  --text-white: #ffffff;
+
+  --border-color: rgba(255, 179, 198, 0.15);
+  --border-light: rgba(255, 179, 198, 0.28);
+
+  --gradient-sidebar: linear-gradient(135deg, #13101c 0%, #0d0b14 100%);
+  --gradient-card: linear-gradient(135deg, rgba(251, 111, 146, 0.1) 0%, rgba(255, 143, 171, 0.02) 100%);
+}
+
+/* ─── Light Mode Theme explicit class ─── */
+.admin-layout.light,
+body.light,
+html.light {
+  --bg-body: #fff4f6;
   --bg-sidebar: #ffffff;
   --bg-card: #ffffff;
-  --bg-card-hover: #fff0f3;            /* Soft rose card hover */
+  --bg-card-hover: #fff0f3;
   --bg-input: #ffffff;
-  --bg-header: rgba(255, 255, 255, 0.92); /* Glassmorphic clean white topbar header */
+  --bg-header: rgba(255, 255, 255, 0.92);
   --bg-modal: #ffffff;
-
-  --text-primary: #2b111c;             /* Rich deep charcoal pink */
+  --text-primary: #2b111c;
   --text-secondary: #d84b70;
   --text-muted: #9e6475;
   --text-white: #ffffff;
-
-  --border-color: #ffb3c6;             /* Pastel rose border */
+  --border-color: #ffb3c6;
   --border-light: #ffc2d1;
-
   --gradient-card: linear-gradient(135deg, rgba(251, 111, 146, 0.05) 0%, rgba(255, 229, 236, 0.3) 100%);
   --shadow-sm: 0 4px 12px rgba(251, 111, 146, 0.06);
   --shadow-md: 0 8px 24px rgba(251, 111, 146, 0.08);
@@ -304,6 +327,13 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow-x: hidden;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
 a {
@@ -359,6 +389,7 @@ ul, ol {
 .admin-layout {
   display: flex;
   min-height: 100vh;
+  flex: 1;
   background: var(--bg-body);
   color: var(--text-primary);
 }
@@ -371,10 +402,14 @@ ul, ol {
   display: flex;
   flex-direction: column;
   background: var(--bg-body);
+  min-width: 0;
+  max-width: calc(100vw - var(--sidebar-width));
+  overflow-x: hidden;
 }
 
 .main-content.collapsed {
   margin-left: var(--sidebar-collapsed);
+  max-width: calc(100vw - var(--sidebar-collapsed));
 }
 
 .page-content {
@@ -382,6 +417,11 @@ ul, ol {
   flex: 1;
   margin-top: var(--header-height);
   background: var(--bg-body);
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ─── Cards ─────────────────────────────────────────────── */

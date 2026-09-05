@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
     Send, Smile, Phone, Video, Info,
     CheckCircle2, Search, Plus, Mic, MessageSquare,
-    Trash2, Sparkles, PhoneOff, User
+    Trash2, Sparkles, PhoneOff, User, ArrowLeft, X
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../utils/api';
@@ -131,9 +131,14 @@ export default function AgentChat() {
 
     // Initialize Socket & Conversations on Mount
     useEffect(() => {
+        const storedAdmin = localStorage.getItem('inakkam_admin') ? JSON.parse(localStorage.getItem('inakkam_admin')) : null;
+        const effectiveUser = admin || storedAdmin;
+        const userId = effectiveUser?._id;
         const token = localStorage.getItem('inakkam_admin_token');
-        const userId = currentUser?._id;
-        const socket = initiateSocketConnection(userId, token);
+
+        if (userId) {
+            initiateSocketConnection(userId, token);
+        }
 
         // Fetch Conversations
         const loadConversations = async () => {
@@ -160,18 +165,48 @@ export default function AgentChat() {
                     if (!activeChatId && formatted.length > 0) {
                         setActiveChatId(formatted[0].id);
                     }
-                } else {
-                    setChats(DEFAULT_DEMO_CHATS);
-                    if (!activeChatId) setActiveChatId(DEFAULT_DEMO_CHATS[0].id);
+                    return;
                 }
             } catch (err) {
-                setChats(DEFAULT_DEMO_CHATS);
-                if (!activeChatId) setActiveChatId(DEFAULT_DEMO_CHATS[0].id);
+                console.log('Conversations endpoint returned empty, loading database users directory...');
             }
+
+            // Fallback: Fetch real users from MongoDB directory so all calls connect to real accounts
+            try {
+                const usersRes = await api.get('/users');
+                const userList = usersRes.data?.users || usersRes.data?.data || [];
+                if (userList.length > 0) {
+                    const formatted = userList.map(u => {
+                        const avatar = u.photos?.[0]
+                            ? (typeof u.photos[0] === 'string' ? u.photos[0] : u.photos[0].url)
+                            : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300';
+                        return {
+                            id: u._id,
+                            conversationId: u._id,
+                            userName: u.name || 'Member',
+                            userImage: avatar,
+                            lastActive: u.isOnline ? 'Online' : 'Recently active',
+                            userId: u._id,
+                            user: u,
+                            lastMessage: { text: 'Click to connect live session', createdAt: u.createdAt || new Date().toISOString() }
+                        };
+                    });
+                    setChats(formatted);
+                    if (!activeChatId && formatted.length > 0) {
+                        setActiveChatId(formatted[0].id);
+                    }
+                    return;
+                }
+            } catch (uErr) {
+                console.log('Could not load user list');
+            }
+
+            setChats(DEFAULT_DEMO_CHATS);
+            if (!activeChatId) setActiveChatId(DEFAULT_DEMO_CHATS[0].id);
         };
 
         loadConversations();
-    }, [currentUser?._id]);
+    }, [admin]);
 
     // Socket Event Handlers for Calls & Messages
     useEffect(() => {
@@ -532,7 +567,7 @@ export default function AgentChat() {
     return (
         <div className="agent-chat-station-container">
             {/* ─── LEFT CONVERSATIONS LIST ─── */}
-            <div className="agent-chat-left-pane">
+            <div className={`agent-chat-left-pane ${activeChatId ? 'has-active-chat' : ''}`}>
                 <div className="agent-chat-left-header">
                     <div className="agent-chat-header-title-row">
                         <h2>
@@ -612,12 +647,19 @@ export default function AgentChat() {
             </div>
 
             {/* ─── CENTER CHAT THREAD ─── */}
-            <div className="agent-chat-center-pane">
+            <div className={`agent-chat-center-pane ${!activeChat ? 'no-chat' : ''}`}>
                 {activeChat ? (
                     <>
                         {/* Top Bar Header */}
                         <div className="agent-chat-top-bar">
                             <div className="agent-chat-active-user-info">
+                                <button
+                                    className="agent-chat-mobile-back-btn"
+                                    onClick={() => setActiveChatId(null)}
+                                    title="Back to conversations"
+                                >
+                                    <ArrowLeft size={18} />
+                                </button>
                                 <div style={{ position: 'relative' }}>
                                     <img
                                         src={activeChat.userImage}
@@ -646,7 +688,7 @@ export default function AgentChat() {
                                     className="agent-chat-voice-btn"
                                     title="Start 1-on-1 Voice Call"
                                 >
-                                    <Phone size={16} style={{ color: '#00d68f' }} /> Voice Call
+                                    <Phone size={16} style={{ color: '#00d68f' }} /> <span>Voice Call</span>
                                 </button>
 
                                 <button
@@ -654,7 +696,7 @@ export default function AgentChat() {
                                     className="agent-chat-video-btn"
                                     title="Start 1-on-1 Video Call (₹35/min)"
                                 >
-                                    <Video size={17} /> Video Call (₹35/m)
+                                    <Video size={17} /> <span>Video Call (₹35/m)</span>
                                 </button>
 
                                 <button
@@ -669,8 +711,8 @@ export default function AgentChat() {
 
                         {/* Quick Canned Replies */}
                         <div className="agent-chat-canned-bar">
-                            <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: 4, fontWeight: 800 }}>
-                                <Sparkles size={14} style={{ color: 'var(--primary)' }} /> QUICK REPLIES:
+                            <span className="agent-chat-canned-label">
+                                <Sparkles size={13} style={{ color: 'var(--primary)' }} /> QUICK:
                             </span>
                             {CANNED_REPLIES.map((reply, idx) => (
                                 <button
@@ -887,6 +929,17 @@ export default function AgentChat() {
             {/* ─── RIGHT PROFILE DRAWER ─── */}
             {showProfileDrawer && activeChat && (
                 <div className="agent-chat-right-drawer">
+                    <div className="agent-chat-drawer-header">
+                        <div className="agent-chat-drawer-header-title">Client Details</div>
+                        <button
+                            onClick={() => setShowProfileDrawer(false)}
+                            className="agent-chat-drawer-close-btn"
+                            title="Close Inspector"
+                        >
+                            <X size={16} />
+                        </button>
+                    </div>
+
                     <img
                         src={activeChat.userImage}
                         alt={activeChat.userName}
@@ -914,17 +967,17 @@ export default function AgentChat() {
                         <button
                             onClick={() => handleStartCall('video')}
                             className="agent-chat-video-btn"
-                            style={{ width: '100%', justifyContent: 'center', padding: '12px' }}
+                            style={{ width: '100%', justifyContent: 'center', padding: '10px' }}
                         >
-                            <Video size={18} /> Start Video Call (₹35/m)
+                            <Video size={16} /> Start Video Call (₹35/m)
                         </button>
 
                         <button
                             onClick={() => handleStartCall('audio')}
                             className="agent-chat-voice-btn"
-                            style={{ width: '100%', justifyContent: 'center', padding: '10px' }}
+                            style={{ width: '100%', justifyContent: 'center', padding: '9px' }}
                         >
-                            <Phone size={16} style={{ color: '#00d68f' }} /> Voice Call
+                            <Phone size={15} style={{ color: '#00d68f' }} /> Voice Call
                         </button>
                     </div>
                 </div>

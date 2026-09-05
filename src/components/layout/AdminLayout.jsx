@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
@@ -7,6 +7,10 @@ export default function AdminLayout() {
     const [collapsed, setCollapsed] = useState(false);
     const [mobileOpen, setMobileOpen] = useState(false);
     const [darkMode, setDarkMode] = useState(false);
+
+    useEffect(() => {
+        document.body.className = darkMode ? 'dark' : 'light';
+    }, [darkMode]);
 
     const toggleSidebar = () => setCollapsed(p => !p);
     const toggleMobile = () => setMobileOpen(p => !p);

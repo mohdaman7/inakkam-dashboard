@@ -104,12 +104,19 @@ export default function AgentDiscover() {
     const [activeCall, setActiveCall] = useState(null);
 
     useEffect(() => {
+        const storedAdmin = localStorage.getItem('inakkam_admin') ? JSON.parse(localStorage.getItem('inakkam_admin')) : null;
+        const effectiveUser = admin || storedAdmin;
+        if (effectiveUser?._id) {
+            initiateSocketConnection(effectiveUser._id);
+        }
+
         const fetchUsers = async () => {
             setLoading(true);
             try {
                 const res = await api.get('/users');
-                if (res.data?.success && res.data.users?.length > 0) {
-                    setUsers(res.data.users);
+                const userList = res.data?.users || res.data?.data || [];
+                if (userList.length > 0) {
+                    setUsers(userList);
                 } else {
                     setUsers(DEFAULT_USERS);
                 }
@@ -121,7 +128,7 @@ export default function AgentDiscover() {
         };
 
         fetchUsers();
-    }, []);
+    }, [admin]);
 
     const filteredUsers = users.filter(u => {
         const name = (u.name || '').toLowerCase();
@@ -159,14 +166,17 @@ export default function AgentDiscover() {
                 roomRes.data?.id;
 
             if (roomRes.data?.success && extractedRoomId) {
-                const socket = getSocket();
+                const storedAdmin = localStorage.getItem('inakkam_admin') ? JSON.parse(localStorage.getItem('inakkam_admin')) : null;
+                const effectiveUser = admin || storedAdmin || currentUser;
+                const socket = getSocket() || initiateSocketConnection(effectiveUser?._id);
+
                 if (socket) {
                     socket.emit('call_user', {
                         conversationId: `conv_${user._id}`,
-                        targetUserId: user._id,
+                        targetUserId: String(user._id),
                         roomId: extractedRoomId,
-                        callerName: currentUser?.name || 'Inakkam Agent',
-                        callerPhoto: currentUser?.avatar || '',
+                        callerName: effectiveUser?.name || 'Inakkam Agent',
+                        callerPhoto: effectiveUser?.avatar || '',
                         callType: 'video'
                     });
                 }
@@ -176,7 +186,7 @@ export default function AgentDiscover() {
                     remoteUserName: user.name,
                     remoteUserPhoto: user.photos?.[0] ? (typeof user.photos[0] === 'string' ? user.photos[0] : user.photos[0].url) : '',
                     callType: 'video',
-                    targetUserId: user._id,
+                    targetUserId: String(user._id),
                     isCaller: true
                 });
             } else {
