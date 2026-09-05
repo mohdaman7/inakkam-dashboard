@@ -8,42 +8,80 @@
 
 .call-logs-stats-bar {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px;
-    margin-bottom: 24px;
+    margin-bottom: 22px;
 }
 
 .call-stat-card {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    padding: 20px;
+    border-radius: 18px;
+    padding: 16px 20px;
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 14px;
+    box-shadow: 0 4px 16px rgba(251, 111, 146, 0.05);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.call-stat-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-light);
+    box-shadow: 0 8px 24px var(--primary-glow);
 }
 
 .call-stat-icon-box {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
+    width: 44px;
+    height: 44px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
+    font-size: 1.35rem;
+    flex-shrink: 0;
 }
 
-.call-stat-meta h3 {
-    margin: 0;
-    font-size: 1.4rem;
-    font-weight: 800;
-    color: var(--text-primary);
+.call-stat-icon-box.pink {
+    background: rgba(251, 111, 146, 0.12);
+    color: var(--primary);
+    border: 1px solid rgba(251, 111, 146, 0.25);
 }
 
-.call-stat-meta span {
-    font-size: 0.75rem;
+.call-stat-icon-box.gold {
+    background: rgba(255, 212, 59, 0.12);
+    color: #e6b800;
+    border: 1px solid rgba(255, 212, 59, 0.25);
+}
+
+.call-stat-icon-box.green {
+    background: rgba(0, 214, 143, 0.12);
+    color: #00d68f;
+    border: 1px solid rgba(0, 214, 143, 0.25);
+}
+
+.call-stat-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+}
+
+.call-stat-label {
+    font-size: 0.72rem;
     color: var(--text-muted);
-    font-weight: 500;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.call-stat-value {
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 850;
+    color: var(--text-primary);
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
 .call-logs-table-card {

@@ -7,32 +7,74 @@
 }
 
 .discover-header-card {
-    background: linear-gradient(135deg, rgba(251, 111, 146, 0.1) 0%, rgba(150, 16, 255, 0.05) 100%);
-    border: 1px solid rgba(251, 111, 146, 0.2);
-    border-radius: var(--radius-lg);
-    padding: 24px 28px;
-    margin-bottom: 24px;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 16px 22px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
+    box-shadow: 0 4px 20px rgba(251, 111, 146, 0.05);
+}
+
+.discover-header-title {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.discover-header-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: var(--primary);
+    text-transform: uppercase;
+}
+
+.discover-header-badge-icon {
+    font-size: 0.85rem;
 }
 
 .discover-header-title h1 {
-    margin: 0 0 6px 0;
-    font-size: 1.6rem;
-    font-weight: 800;
+    margin: 0;
+    font-size: 1.35rem;
+    font-weight: 850;
     color: var(--text-primary);
-    display: flex;
-    align-items: center;
-    gap: 10px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
 }
 
-.discover-header-title p {
-    margin: 0;
-    color: var(--text-secondary);
-    font-size: 0.88rem;
+.discover-header-stat-pill {
+    background: rgba(0, 214, 143, 0.1);
+    border: 1px solid rgba(0, 214, 143, 0.28);
+    color: #00d68f;
+    padding: 7px 14px;
+    border-radius: 24px;
+    font-size: 0.8rem;
+    font-weight: 750;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.discover-pulse-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #00d68f;
+    box-shadow: 0 0 8px #00d68f;
+    animation: pulseDot 1.8s infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.85); }
 }
 
 /* Filter Toolbar */

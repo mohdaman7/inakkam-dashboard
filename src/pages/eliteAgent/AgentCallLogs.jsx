@@ -73,32 +73,32 @@ export default function AgentCallLogs() {
             {/* Top Stat Metrics */}
             <div className="call-logs-stats-bar">
                 <div className="call-stat-card">
-                    <div className="call-stat-icon-box" style={{ background: 'rgba(251, 111, 146, 0.15)', color: 'var(--primary)' }}>
+                    <div className="call-stat-icon-box pink">
                         <MdVideocam />
                     </div>
                     <div className="call-stat-meta">
-                        <h3>76.2 hrs</h3>
-                        <span>Total Video Call Time</span>
+                        <span className="call-stat-label">Video Call Time</span>
+                        <h3 className="call-stat-value">76.2 hrs</h3>
                     </div>
                 </div>
 
                 <div className="call-stat-card">
-                    <div className="call-stat-icon-box" style={{ background: 'rgba(255, 212, 59, 0.15)', color: '#ffd43b' }}>
+                    <div className="call-stat-icon-box gold">
                         <MdMonetizationOn />
                     </div>
                     <div className="call-stat-meta">
-                        <h3>2,665 Coins</h3>
-                        <span>Call Earnings Today</span>
+                        <span className="call-stat-label">Today's Coins</span>
+                        <h3 className="call-stat-value">2,665</h3>
                     </div>
                 </div>
 
                 <div className="call-stat-card">
-                    <div className="call-stat-icon-box" style={{ background: 'rgba(0, 214, 143, 0.15)', color: '#00d68f' }}>
+                    <div className="call-stat-icon-box green">
                         <MdCheckCircle />
                     </div>
                     <div className="call-stat-meta">
-                        <h3>98.4%</h3>
-                        <span>Call Satisfaction Rating</span>
+                        <span className="call-stat-label">Satisfaction</span>
+                        <h3 className="call-stat-value">98.4%</h3>
                     </div>
                 </div>
             </div>

@@ -203,29 +203,15 @@ export default function AgentDiscover() {
             {/* Header Banner */}
             <div className="discover-header-card">
                 <div className="discover-header-title">
-                    <h1>
-                        <MdFlashOn style={{ color: 'var(--primary)' }} /> Discover & Connect with Members
-                    </h1>
-                    <p>
-                        Browse active clients looking to connect, chat, and start video calls.
-                    </p>
-                </div>
-                <div style={{ display: 'flex', gap: 12 }}>
-                    <div style={{
-                        background: 'rgba(0, 214, 143, 0.15)',
-                        border: '1px solid rgba(0, 214, 143, 0.3)',
-                        color: '#00d68f',
-                        padding: '8px 16px',
-                        borderRadius: 12,
-                        fontSize: '0.85rem',
-                        fontWeight: 700,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6
-                    }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#00d68f' }} />
-                        {users.filter(u => u.isOnline).length || 4} Members Online Now
+                    <div className="discover-header-badge">
+                        <MdFlashOn className="discover-header-badge-icon" />
+                        <span>MEMBER DIRECTORY</span>
                     </div>
+                    <h1>Discover Members</h1>
+                </div>
+                <div className="discover-header-stat-pill">
+                    <span className="discover-pulse-dot" />
+                    <span>{users.filter(u => u.isOnline).length || 4} Online Now</span>
                 </div>
             </div>
 
