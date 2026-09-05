@@ -169,6 +169,7 @@ html.light {
 .admin-layout.light .sidebar {
   background: #ffffff;
   border-right: 1px solid var(--border-color);
+  box-shadow: 2px 0 24px rgba(251, 111, 146, 0.06);
 }
 .admin-layout.light .sidebar-logo-name {
   color: #2b111c;
@@ -185,16 +186,15 @@ html.light {
 }
 .admin-layout.light .sidebar-item.active {
   color: #fb6f92;
-  background: linear-gradient(135deg, rgba(251, 111, 146, 0.12) 0%, rgba(255, 229, 236, 0.4) 100%);
-  border-left-color: #fb6f92;
+  background: linear-gradient(135deg, rgba(251, 111, 146, 0.14) 0%, rgba(255, 229, 236, 0.5) 100%);
+  border-color: #ffb3c6;
 }
 .admin-layout.light .sidebar-item-parent.active-parent {
   background: rgba(251, 111, 146, 0.08);
   color: #fb6f92;
 }
 .admin-layout.light .sidebar-submenu {
-  background: rgba(255, 229, 236, 0.4);
-  border-left: 1px solid #ffb3c6;
+  border-left-color: #ffb3c6;
 }
 .admin-layout.light .sidebar-subitem {
   color: #7a5463;
@@ -207,6 +207,7 @@ html.light {
   color: #fb6f92;
   background: rgba(251, 111, 146, 0.12);
 }
+
 
 .admin-layout.light .card {
   background: #ffffff;
