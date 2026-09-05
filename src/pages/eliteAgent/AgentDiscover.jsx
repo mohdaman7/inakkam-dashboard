@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
-import { getSocket } from '../../utils/socket';
+import { getSocket, initiateSocketConnection } from '../../utils/socket';
 import {
     MdSearch, MdLocationOn, MdVideocam, MdChat,
     MdFilterList, MdVerified, MdStar, MdPeople, MdFlashOn
