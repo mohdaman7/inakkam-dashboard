@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
     MdVideocam, MdCall, MdMonetizationOn, MdAccessTime,
     MdCheckCircle, MdPerson, MdPhoneCallback
 } from 'react-icons/md';
-import AgentVideoCallModal from './AgentVideoCallModal';
 import toast from 'react-hot-toast';
 import './AgentCallLogs.css';
 
@@ -59,13 +59,11 @@ const SAMPLE_LOGS = [
 ];
 
 export default function AgentCallLogs() {
-    const [callingUser, setCallingUser] = useState(null);
+    const navigate = useNavigate();
 
     const handleCallback = (log) => {
-        setCallingUser({
-            name: log.callerName,
-            photos: [{ url: log.callerAvatar }]
-        });
+        toast.success(`Opening conversation with ${log.callerName}`);
+        navigate('/agent/chat');
     };
 
     return (
@@ -180,16 +178,6 @@ export default function AgentCallLogs() {
                     </table>
                 </div>
             </div>
-
-            {/* Video Call Modal */}
-            <AgentVideoCallModal
-                isOpen={Boolean(callingUser)}
-                onClose={() => setCallingUser(null)}
-                targetUser={callingUser}
-                onEarningsEarned={(coins) => {
-                    toast.success(`🎉 Earned +${coins} coins from video session!`, { icon: '💰' });
-                }}
-            />
         </div>
     );
 }

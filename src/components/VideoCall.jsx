@@ -30,7 +30,6 @@ const VideoCall = ({
   targetUserId,
   isCaller = true,
 }) => {
-  const dispatch = () => {};
   const [callStatus, setCallStatus] = useState("connecting"); // connecting | connected | disconnected
   const [duration, setDuration] = useState(0);
   const [micActive, setMicActive] = useState(true);
@@ -244,15 +243,13 @@ const VideoCall = ({
         if (!res.data.success && res.data.insufficientCoins) {
           toast.error("Insufficient coin balance to continue call");
           if (isMountedRef.current) handleDisconnect();
-        } else {
-          dispatch(fetchMe());
         }
       } catch (err) {
         // Ignore API errors silently
       }
     }, 20000);
     return () => clearInterval(coinDeductInterval);
-  }, [callStatus, callType, targetUid, dispatch, handleDisconnect, isCaller]);
+  }, [callStatus, callType, targetUid, handleDisconnect, isCaller]);
 
   // ─── MutationObserver: auto-fix EnableX-injected media elements ────────
   // EnableX injects <video>/<audio> elements asynchronously into its

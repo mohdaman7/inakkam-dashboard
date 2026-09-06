@@ -11,13 +11,11 @@ import {
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
-import AgentVideoCallModal from './AgentVideoCallModal';
 import './EliteAgentPortal.css';
 
 export default function EliteAgentPortal() {
     const { admin } = useAuth();
     const navigate = useNavigate();
-    const [videoModalOpen, setVideoModalOpen] = useState(false);
 
     const [loading, setLoading] = useState(true);
     const [summary, setSummary] = useState({
@@ -317,7 +315,7 @@ export default function EliteAgentPortal() {
 
                 <div
                     className="card"
-                    onClick={() => setVideoModalOpen(true)}
+                    onClick={() => navigate('/agent/chat')}
                     style={{
                         padding: '20px 24px',
                         display: 'flex',
@@ -784,24 +782,6 @@ export default function EliteAgentPortal() {
                     </div>
                 </div>
             )}
-
-            {/* Live Video Call Station Modal */}
-            <AgentVideoCallModal
-                isOpen={videoModalOpen}
-                onClose={() => setVideoModalOpen(false)}
-                targetUser={{
-                    name: 'Aarav Shah (VIP Lead)',
-                    photos: ['https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=500']
-                }}
-                onEarningsEarned={(coins) => {
-                    setSummary(prev => ({
-                        ...prev,
-                        earnedCoins: prev.earnedCoins + coins,
-                        todayCoins: prev.todayCoins + coins
-                    }));
-                    toast.success(`🎉 Earned +${coins} coins from video session!`, { icon: '💰' });
-                }}
-            />
         </div>
     );
 }
