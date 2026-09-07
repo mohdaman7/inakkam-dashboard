@@ -485,8 +485,6 @@ export default function AgentDiscover() {
                 <div className="discover-grid">
                     {filteredUsers.map(user => {
                         const photo = user.photos[0];
-                        const matchPct = user.matchPercentage || 92;
-                        const ringOffset = 100 - matchPct;
 
                         return (
                             <div key={user._id} className="discover-user-card">
@@ -521,20 +519,6 @@ export default function AgentDiscover() {
                                             ★ {user.membership.toUpperCase()}
                                         </div>
                                     )}
-
-                                    {/* Match % Circular Meter */}
-                                    <div className="discover-match-circle" title={`${matchPct}% Compatibility Match`}>
-                                        <svg viewBox="0 0 36 36" className="discover-circular-chart">
-                                            <path className="circle-bg"
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                            />
-                                            <path className="circle"
-                                                strokeDasharray={`${matchPct}, 100`}
-                                                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-                                            />
-                                        </svg>
-                                        <span className="discover-match-val">{matchPct}%</span>
-                                    </div>
                                 </div>
 
                                 {/* Card Body */}
@@ -630,10 +614,6 @@ export default function AgentDiscover() {
                                     <span>VERIFIED</span>
                                 </div>
                             )}
-
-                            <div className="discover-swipe-match-pill">
-                                <span>{currentSwipeCard.matchPercentage}% MATCH</span>
-                            </div>
                         </div>
 
                         {/* Bottom Info Overlay */}
@@ -766,8 +746,8 @@ export default function AgentDiscover() {
                                         <MdSchool size={14} /> {selectedProfile.education}
                                     </span>
                                 )}
-                                <span className="discover-meta-chip match">
-                                    ★ {selectedProfile.matchPercentage}% Match ({selectedProfile.distance})
+                                <span className="discover-meta-chip distance">
+                                    <MdLocationOn size={14} /> {selectedProfile.distance}
                                 </span>
                             </div>
 
