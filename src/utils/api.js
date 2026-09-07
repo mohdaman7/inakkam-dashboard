@@ -16,14 +16,14 @@ api.interceptors.request.use((config) => {
     let url = config.url || '';
     if (url.startsWith('/api/')) {
         config.baseURL = API_BASE_URL;
+    } else if (url.startsWith('/admin')) {
+        config.baseURL = `${API_BASE_URL}/api`;
     } else if (
         url.startsWith('/enablex') ||
         url.startsWith('/conversations') ||
         url.startsWith('/coins') ||
-        url.startsWith('/users') ||
         url.startsWith('/matches') ||
-        url.startsWith('/auth') ||
-        url.startsWith('/discover')
+        url.startsWith('/auth')
     ) {
         config.baseURL = `${API_BASE_URL}/api`;
     } else {
