@@ -159,6 +159,46 @@ const VideoCall = ({
         setCallStatus("disconnected");
       }
 
+      // Record call log to persistent storage
+      if (duration > 0 || callStatus === "connected") {
+        try {
+          const callDurationSecs = duration || 0;
+          const mins = Math.floor(callDurationSecs / 60);
+          const secs = callDurationSecs % 60;
+          const durationFormatted = mins > 0 
+            ? `${mins.toString().padStart(2, '0')} mins ${secs.toString().padStart(2, '0')} secs`
+            : `${secs} secs`;
+          
+          const coinsEarned = callType === 'audio' 
+            ? Math.round((callDurationSecs / 60) * 15)
+            : Math.max(1, Math.round((callDurationSecs / 60) * 51));
+          
+          const rupeesEarned = `₹${(coinsEarned / 3).toFixed(2)}`;
+
+          const newLog = {
+            id: `call_${Date.now()}_${Math.random().toString(36).substr(2, 6)}`,
+            callerName: remoteUserName || 'Inakkam Member',
+            callerAvatar: remoteUserPhoto || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200',
+            callerId: targetUid,
+            type: callType === 'audio' ? '1-on-1 Voice Call' : '1-on-1 Video Call',
+            callType: callType,
+            duration: durationFormatted,
+            durationSeconds: callDurationSecs,
+            coinsEarned: coinsEarned,
+            rupeesEarned: rupeesEarned,
+            timestamp: `Today, ${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}`,
+            date: new Date().toISOString(),
+            status: 'Completed'
+          };
+
+          const existingLogs = JSON.parse(localStorage.getItem('inakkam_call_logs') || '[]');
+          existingLogs.unshift(newLog);
+          localStorage.setItem('inakkam_call_logs', JSON.stringify(existingLogs.slice(0, 100)));
+        } catch (e) {
+          console.warn("Could not save call log:", e);
+        }
+      }
+
       if (onEndCallRef.current) {
         setTimeout(() => onEndCallRef.current(), 50);
       }
