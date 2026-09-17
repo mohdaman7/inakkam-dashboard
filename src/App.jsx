@@ -22,6 +22,7 @@ import PackageList from './pages/package/PackageList';
 import StaffAdd from './pages/staff/StaffAdd';
 import StaffList from './pages/staff/StaffList';
 import PaymentList from './pages/PaymentList';
+import CoinRequests from './pages/CoinRequests';
 import FakeUserGenerator from './pages/FakeUserGenerator';
 import ReportList from './pages/ReportList';
 import PageAdd from './pages/pages/PageAdd';
@@ -131,6 +132,7 @@ export default function App() {
         <Route path="package/list" element={<PermissionRoute moduleKey="package" op="Read"><PackageList /></PermissionRoute>} />
         <Route path="staff/add" element={<AdminOnlyRoute><StaffAdd /></AdminOnlyRoute>} />
         <Route path="staff/list" element={<AdminOnlyRoute><StaffList /></AdminOnlyRoute>} />
+        <Route path="coin-requests" element={<CoinRequests />} />
         <Route path="payment-list" element={<PermissionRoute moduleKey="paymentGateway" op="Read"><PaymentList /></PermissionRoute>} />
         <Route path="fake-user-generator" element={<PermissionRoute moduleKey="fakeUser" op="Update"><FakeUserGenerator /></PermissionRoute>} />
         <Route path="report-list" element={<PermissionRoute moduleKey="report" op="Read"><ReportList /></PermissionRoute>} />

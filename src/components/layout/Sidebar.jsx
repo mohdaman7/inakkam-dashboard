@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
-    MdDashboard, MdOutlineAutoAwesome, MdLanguage, MdBook, MdCardGiftcard,
+    MdDashboard, MdCurrencyRupee, MdOutlineAutoAwesome, MdLanguage, MdBook, MdCardGiftcard,
     MdFavorite, MdQuestionAnswer, MdStar, MdLocalOffer, MdPeople,
     MdPayment, MdPersonAdd, MdReport, MdPages, MdAccountBalanceWallet,
     MdList, MdNotifications, MdAdd, MdVerifiedUser, MdSettings, MdChevronRight,
@@ -103,6 +103,7 @@ const adminMenuSections = [
                     { label: 'List Package', icon: <MdList />, path: '/package/list' },
                 ]
             },
+            { label: 'Coin Requests', icon: <MdCurrencyRupee />, path: '/coin-requests', badge: 'New' },
             { label: 'Payment List', icon: <MdPayment />, path: '/payment-list' },
             { label: 'Payout List', icon: <MdAccountBalanceWallet />, path: '/payout-list' },
         ]
