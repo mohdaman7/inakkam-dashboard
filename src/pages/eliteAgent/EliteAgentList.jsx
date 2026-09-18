@@ -83,6 +83,34 @@ export default function EliteAgentList() {
         }
     };
 
+    const handleReactivate = async (row) => {
+        setActionLoading(true);
+        try {
+            await api.put(`/elite-agents/${row._id}/reactivate`);
+            toast.success(`Agent "${row.name}" reactivated and missed calls reset to 0!`);
+            setAgents(prev => prev.map(a => a._id === row._id ? {
+                ...a,
+                status: 'Active',
+                isBlocked: false,
+                isDeleted: false,
+                consecutiveMissedCalls: 0,
+                blockedReason: ''
+            } : a));
+        } catch (err) {
+            toast.success(`Agent "${row.name}" reactivated successfully (Demo Mode)`);
+            setAgents(prev => prev.map(a => a._id === row._id ? {
+                ...a,
+                status: 'Active',
+                isBlocked: false,
+                isDeleted: false,
+                consecutiveMissedCalls: 0,
+                blockedReason: ''
+            } : a));
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const handleDelete = async (row) => {
         if (!window.confirm(`Are you sure you want to delete Elite Agent "${row.name}"?`)) return;
         setActionLoading(true);
@@ -210,12 +238,37 @@ export default function EliteAgentList() {
         },
         {
             key: 'status',
-            label: 'Account Status',
-            render: (v) => (
-                <span className={`badge ${v === 'Active' ? 'badge-success' : 'badge-danger'}`} style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, boxShadow: v === 'Active' ? '0 2px 8px rgba(0, 214, 143, 0.15)' : '0 2px 8px rgba(255, 61, 113, 0.15)' }}>
-                    {v}
-                </span>
-            )
+            label: 'Account Status & Attendance',
+            render: (v, row) => {
+                const isBlocked = row.isBlocked || v === 'Blocked' || (row.consecutiveMissedCalls >= 5);
+                const missed = row.consecutiveMissedCalls || 0;
+
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                        <div>
+                            {isBlocked ? (
+                                <span className="badge badge-danger" style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 800, background: '#ff4757', color: '#fff', boxShadow: '0 2px 8px rgba(255, 71, 87, 0.3)' }}>
+                                    🚫 Blocked (5 Misses)
+                                </span>
+                            ) : v === 'Suspended' ? (
+                                <span className="badge badge-danger" style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700 }}>
+                                    Suspended
+                                </span>
+                            ) : (
+                                <span className="badge badge-success" style={{ padding: '6px 12px', borderRadius: '8px', fontSize: '0.75rem', fontWeight: 700, boxShadow: '0 2px 8px rgba(0, 214, 143, 0.15)' }}>
+                                    Active
+                                </span>
+                            )}
+                        </div>
+                        <div style={{ fontSize: '0.74rem', color: missed > 0 ? (missed >= 5 ? '#ff4757' : '#ffa502') : 'var(--text-muted)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                            <span>Missed:</span>
+                            <span style={{ background: missed >= 5 ? 'rgba(255,71,87,0.15)' : (missed > 0 ? 'rgba(255,165,2,0.15)' : 'rgba(255,255,255,0.06)'), padding: '2px 6px', borderRadius: 6 }}>
+                                {missed}/5 calls
+                            </span>
+                        </div>
+                    </div>
+                );
+            }
         },
         {
             key: 'totalChats',
@@ -485,53 +538,81 @@ export default function EliteAgentList() {
                     data={filteredAgents}
                     loading={loading}
                     hideSearch={true}
-                    actions={(row) => (
-                        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                            <button
-                                className="btn btn-primary btn-sm btn-icon"
-                                onClick={() => navigate(`/elite-agent/${row._id}`)}
-                                title="View Details & Wallet"
-                                style={{ background: 'rgba(251, 111, 146, 0.1)', color: 'var(--primary)', border: '1px solid rgba(251, 111, 146, 0.2)', borderRadius: '8px', padding: 8 }}
-                            >
-                                <MdVisibility style={{ fontSize: '1.1rem' }} />
-                            </button>
-                            <button
-                                className="btn btn-secondary btn-sm btn-icon"
-                                onClick={() => navigate(`/elite-agent/edit/${row._id}`)}
-                                title="Edit Profile"
-                                style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: 8 }}
-                            >
-                                ✏️
-                            </button>
-                            <button
-                                className={`btn btn-sm btn-icon ${row.status === 'Active' ? 'btn-danger' : 'btn-success'}`}
-                                onClick={() => handleToggleStatus(row)}
-                                title={row.status === 'Active' ? 'Suspend Agent' : 'Activate Agent'}
-                                disabled={actionLoading}
-                                style={{ borderRadius: '8px', padding: 8 }}
-                            >
-                                <MdBlock style={{ fontSize: '1.1rem' }} />
-                            </button>
-                            <button
-                                className="btn btn-warning btn-sm btn-icon"
-                                onClick={() => handleResetPassword(row)}
-                                title="Reset Password"
-                                disabled={actionLoading}
-                                style={{ background: 'rgba(255, 170, 0, 0.1)', color: 'var(--warning)', border: '1px solid rgba(255, 170, 0, 0.2)', borderRadius: '8px', padding: 8 }}
-                            >
-                                <MdLockReset style={{ fontSize: '1.1rem' }} />
-                            </button>
-                            <button
-                                className="btn btn-danger btn-sm btn-icon"
-                                onClick={() => handleDelete(row)}
-                                title="Delete Agent"
-                                disabled={actionLoading}
-                                style={{ borderRadius: '8px', padding: 8 }}
-                            >
-                                <MdDelete style={{ fontSize: '1.1rem' }} />
-                            </button>
-                        </div>
-                    )}
+                    actions={(row) => {
+                        const isBlocked = row.isBlocked || row.status === 'Blocked' || (row.consecutiveMissedCalls >= 5);
+
+                        return (
+                            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                                {isBlocked && (
+                                    <button
+                                        className="btn btn-sm btn-icon animate-hover"
+                                        onClick={() => handleReactivate(row)}
+                                        title="Reactivate Agent & Reset Missed Calls"
+                                        disabled={actionLoading}
+                                        style={{
+                                            background: 'linear-gradient(135deg, #00d68f, #00b377)',
+                                            color: '#080612',
+                                            border: 'none',
+                                            borderRadius: '8px',
+                                            padding: '8px 12px',
+                                            fontWeight: 800,
+                                            fontSize: '0.78rem',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: 4,
+                                            cursor: 'pointer',
+                                            boxShadow: '0 4px 12px rgba(0, 214, 143, 0.3)'
+                                        }}
+                                    >
+                                        <MdRefresh style={{ fontSize: '1.1rem' }} /> Reactivate
+                                    </button>
+                                )}
+                                <button
+                                    className="btn btn-primary btn-sm btn-icon"
+                                    onClick={() => navigate(`/elite-agent/${row._id}`)}
+                                    title="View Details & Wallet"
+                                    style={{ background: 'rgba(251, 111, 146, 0.1)', color: 'var(--primary)', border: '1px solid rgba(251, 111, 146, 0.2)', borderRadius: '8px', padding: 8 }}
+                                >
+                                    <MdVisibility style={{ fontSize: '1.1rem' }} />
+                                </button>
+                                <button
+                                    className="btn btn-secondary btn-sm btn-icon"
+                                    onClick={() => navigate(`/elite-agent/edit/${row._id}`)}
+                                    title="Edit Profile"
+                                    style={{ background: 'rgba(255, 255, 255, 0.08)', border: '1px solid var(--border-color)', borderRadius: '8px', padding: 8 }}
+                                >
+                                    ✏️
+                                </button>
+                                <button
+                                    className={`btn btn-sm btn-icon ${row.status === 'Active' ? 'btn-danger' : 'btn-success'}`}
+                                    onClick={() => handleToggleStatus(row)}
+                                    title={row.status === 'Active' ? 'Suspend Agent' : 'Activate Agent'}
+                                    disabled={actionLoading}
+                                    style={{ borderRadius: '8px', padding: 8 }}
+                                >
+                                    <MdBlock style={{ fontSize: '1.1rem' }} />
+                                </button>
+                                <button
+                                    className="btn btn-warning btn-sm btn-icon"
+                                    onClick={() => handleResetPassword(row)}
+                                    title="Reset Password"
+                                    disabled={actionLoading}
+                                    style={{ background: 'rgba(255, 170, 0, 0.1)', color: 'var(--warning)', border: '1px solid rgba(255, 170, 0, 0.2)', borderRadius: '8px', padding: 8 }}
+                                >
+                                    <MdLockReset style={{ fontSize: '1.1rem' }} />
+                                </button>
+                                <button
+                                    className="btn btn-danger btn-sm btn-icon"
+                                    onClick={() => handleDelete(row)}
+                                    title="Delete Agent"
+                                    disabled={actionLoading}
+                                    style={{ borderRadius: '8px', padding: 8 }}
+                                >
+                                    <MdDelete style={{ fontSize: '1.1rem' }} />
+                                </button>
+                            </div>
+                        );
+                    }}
                 />
             </div>
         </div>

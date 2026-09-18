@@ -119,6 +119,40 @@ export default function AgentChat() {
     // Call-related state
     const [activeCall, setActiveCall] = useState(null);
     const [incomingCall, setIncomingCall] = useState(null);
+    const [incomingCallTimer, setIncomingCallTimer] = useState(30);
+    const [isAgentBlocked, setIsAgentBlocked] = useState(false);
+    const [blockReason, setBlockReason] = useState('');
+
+    // 30s Countdown timer effect for incoming calls
+    useEffect(() => {
+        let timerInterval = null;
+        if (incomingCall) {
+            setIncomingCallTimer(incomingCall.timeout || 30);
+            timerInterval = setInterval(() => {
+                setIncomingCallTimer(prev => {
+                    if (prev <= 1) {
+                        clearInterval(timerInterval);
+                        setIncomingCall(null);
+                        return 0;
+                    }
+                    return prev - 1;
+                });
+            }, 1000);
+        } else {
+            setIncomingCallTimer(30);
+        }
+        return () => {
+            if (timerInterval) clearInterval(timerInterval);
+        };
+    }, [incomingCall]);
+
+    // Check admin blocked status on load/change
+    useEffect(() => {
+        if (admin?.isBlocked) {
+            setIsAgentBlocked(true);
+            setBlockReason(admin.blockedReason || '5 consecutive missed calls');
+        }
+    }, [admin]);
 
     const messagesEndRef = useRef(null);
 
@@ -265,11 +299,21 @@ export default function AgentChat() {
             }));
         };
 
+        const handleAccountBlocked = (data) => {
+            console.log('🚫 Host account blocked:', data);
+            setIsAgentBlocked(true);
+            setBlockReason(data?.message || 'Your account has been suspended due to 5 consecutive missed calls.');
+            toast.error('Account suspended: 5 consecutive missed calls', { duration: 6000 });
+            setIncomingCall(null);
+            setActiveCall(null);
+        };
+
         socket.on('incoming_call', handleIncomingCall);
         socket.on('call_accepted', handleCallAccepted);
         socket.on('call_rejected', handleCallRejected);
         socket.on('call_ended', handleCallEnded);
         socket.on('call_error', handleCallError);
+        socket.on('account_blocked', handleAccountBlocked);
         socket.on('new_message', handleNewMessage);
         socket.on('message_deleted', handleMessageDeleted);
 
@@ -279,6 +323,7 @@ export default function AgentChat() {
             socket.off('call_rejected', handleCallRejected);
             socket.off('call_ended', handleCallEnded);
             socket.off('call_error', handleCallError);
+            socket.off('account_blocked', handleAccountBlocked);
             socket.off('new_message', handleNewMessage);
             socket.off('message_deleted', handleMessageDeleted);
         };
@@ -997,7 +1042,7 @@ export default function AgentChat() {
                 />
             )}
 
-            {/* ─── INCOMING CALL POPUP DIALOG (PWA PARITY) ─── */}
+            {/* ─── INCOMING CALL POPUP DIALOG (30S LIVE COUNTDOWN & FORWARDING) ─── */}
             <AnimatePresence>
                 {incomingCall && (
                     <div style={{
@@ -1007,8 +1052,8 @@ export default function AgentChat() {
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
-                        background: 'rgba(0,0,0,0.7)',
-                        backdropFilter: 'blur(10px)',
+                        background: 'rgba(0,0,0,0.75)',
+                        backdropFilter: 'blur(12px)',
                         padding: 16
                     }}>
                         <motion.div
@@ -1016,17 +1061,27 @@ export default function AgentChat() {
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             style={{
-                                background: 'var(--bg-modal, #17142b)',
+                                background: 'linear-gradient(145deg, #1b132b, #120c22)',
                                 borderRadius: 24,
                                 padding: 28,
                                 width: '100%',
                                 maxWidth: 360,
                                 textAlign: 'center',
-                                boxShadow: '0 20px 60px rgba(0,0,0,0.8)',
-                                border: '1px solid var(--border-color)'
+                                boxShadow: '0 20px 60px rgba(0,0,0,0.9)',
+                                border: '1px solid rgba(255, 71, 87, 0.4)'
                             }}
                         >
                             <div style={{ position: 'relative', display: 'inline-block', marginBottom: 16 }}>
+                                <motion.div
+                                    animate={{ scale: [1, 1.08, 1] }}
+                                    transition={{ repeat: Infinity, duration: 1.5 }}
+                                    style={{
+                                        position: 'absolute',
+                                        inset: -6,
+                                        borderRadius: '50%',
+                                        border: '2px solid rgba(255, 71, 87, 0.6)'
+                                    }}
+                                />
                                 <img
                                     src={incomingCall.callerPhoto || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300"}
                                     alt={incomingCall.callerName}
@@ -1035,19 +1090,41 @@ export default function AgentChat() {
                                         height: 90,
                                         borderRadius: '50%',
                                         objectFit: 'cover',
-                                        border: '4px solid var(--primary)',
-                                        margin: '0 auto'
+                                        border: '4px solid #ff4757',
+                                        margin: '0 auto',
+                                        display: 'block'
                                     }}
                                 />
                             </div>
-                            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--text-primary)', margin: '0 0 4px 0' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: '0 0 4px 0' }}>
                                 {incomingCall.callerName}
                             </h3>
                             <p style={{ fontSize: '0.78rem', color: '#00d68f', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
                                 Incoming {incomingCall.callType === 'audio' ? 'Voice' : 'Video'} Call...
                             </p>
 
-                            <div style={{ display: 'flex', gap: 14, marginTop: 24 }}>
+                            {/* 30-Second Countdown Timer Bar */}
+                            <div style={{ margin: '20px 0 8px 0', background: 'rgba(255,255,255,0.05)', padding: '10px 14px', borderRadius: 14 }}>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6, fontSize: '0.76rem', color: '#ff6b81', fontWeight: 700 }}>
+                                    <span>Auto-Forwarding in</span>
+                                    <span style={{ background: 'rgba(255, 71, 87, 0.2)', padding: '2px 8px', borderRadius: 10, color: '#fff', fontWeight: 800 }}>
+                                        {incomingCallTimer}s
+                                    </span>
+                                </div>
+                                <div style={{ height: 6, background: 'rgba(255,255,255,0.1)', borderRadius: 3, overflow: 'hidden' }}>
+                                    <motion.div
+                                        animate={{ width: `${(incomingCallTimer / 30) * 100}%` }}
+                                        transition={{ duration: 0.3 }}
+                                        style={{
+                                            height: '100%',
+                                            background: incomingCallTimer > 10 ? 'linear-gradient(90deg, #00d68f, #ff4757)' : '#ff4757',
+                                            borderRadius: 3
+                                        }}
+                                    />
+                                </div>
+                            </div>
+
+                            <div style={{ display: 'flex', gap: 14, marginTop: 20 }}>
                                 <button
                                     onClick={handleDeclineCall}
                                     style={{
@@ -1090,6 +1167,87 @@ export default function AgentChat() {
                                     {incomingCall.callType === 'audio' ? <Phone size={16} /> : <Video size={16} />} Accept
                                 </button>
                             </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* ─── AGENT ACCOUNT SUSPENDED OVERLAY (5 CONSECUTIVE MISSES) ─── */}
+            <AnimatePresence>
+                {isAgentBlocked && (
+                    <div style={{
+                        position: 'fixed',
+                        inset: 0,
+                        zIndex: 10000,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: 'rgba(5, 3, 14, 0.92)',
+                        backdropFilter: 'blur(16px)',
+                        padding: 20
+                    }}>
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            style={{
+                                background: 'linear-gradient(145deg, #1f1433, #120b20)',
+                                borderRadius: 24,
+                                padding: 32,
+                                maxWidth: 460,
+                                width: '100%',
+                                textAlign: 'center',
+                                border: '1px solid rgba(255, 71, 87, 0.35)',
+                                boxShadow: '0 20px 60px rgba(255, 71, 87, 0.25)'
+                            }}
+                        >
+                            <div style={{
+                                width: 72,
+                                height: 72,
+                                borderRadius: '50%',
+                                background: 'rgba(255, 71, 87, 0.15)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                margin: '0 auto 20px',
+                                color: '#ff4757'
+                            }}>
+                                <PhoneOff size={36} />
+                            </div>
+                            <h2 style={{ fontSize: '1.35rem', fontWeight: 800, color: '#fff', margin: '0 0 10px 0' }}>
+                                Host Account Suspended
+                            </h2>
+                            <p style={{ fontSize: '0.88rem', color: 'rgba(255,255,255,0.7)', lineHeight: 1.6, margin: '0 0 20px 0' }}>
+                                {blockReason || 'Your host account has been suspended due to 5 consecutive missed calls. You will not receive incoming calls or appear in discovery until reactivated by an Admin.'}
+                            </p>
+                            <div style={{
+                                background: 'rgba(255, 71, 87, 0.1)',
+                                border: '1px dashed rgba(255, 71, 87, 0.4)',
+                                padding: '12px 16px',
+                                borderRadius: 14,
+                                color: '#ff6b81',
+                                fontSize: '0.82rem',
+                                fontWeight: 600,
+                                marginBottom: 24
+                            }}>
+                                ⚠️ Contact your Superadmin to review your call attendance and reactivate your profile.
+                            </div>
+                            <button
+                                onClick={() => navigate('/elite-agents')}
+                                style={{
+                                    width: '100%',
+                                    padding: '13px',
+                                    borderRadius: 14,
+                                    background: 'linear-gradient(135deg, #ff4757, #ff6b81)',
+                                    border: 'none',
+                                    color: '#fff',
+                                    fontWeight: 800,
+                                    fontSize: '0.9rem',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 6px 20px rgba(255, 71, 87, 0.3)'
+                                }}
+                            >
+                                View Agents Directory
+                            </button>
                         </motion.div>
                     </div>
                 )}
