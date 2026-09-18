@@ -2,18 +2,39 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
     MdCloudUpload, MdArrowBack, MdCardGiftcard, MdOutlineMonetizationOn, 
-    MdAutoAwesome, MdClose, MdCheckCircle, MdInfoOutline, MdPlayArrow
+    MdAutoAwesome, MdClose, MdCheckCircle, MdInfoOutline, MdPlayArrow,
+    MdAccessTime, MdTimer, MdCalendarToday, MdFlashOn, MdHourglassEmpty
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import confetti from 'canvas-confetti';
 import api from '../../utils/api';
 
-const PRESET_COINS = [10, 25, 50, 100, 250, 500, 1000, 2500, 5000];
-const QUICK_EMOJIS = ['🌹', '💝', '🧸', '💎', '👑', '🏎️', '🚀', '🛥️', '🏰', '🏆', '🍾', '💍', '🦄', '🎆', '🎁'];
+const PRESET_COINS = [25, 50, 100, 200, 500, 1000];
+
+// Duration Presets matching client request: "like 7h or 1d etc"
+const DURATION_PRESETS = [
+    { label: '1 Hour', hours: 1, tag: 'Flash Drop', icon: '⚡' },
+    { label: '7 Hours', hours: 7, tag: '7h Drop', icon: '⏱️' },
+    { label: '12 Hours', hours: 12, tag: 'Half Day', icon: '⏳' },
+    { label: '1 Day (24h)', hours: 24, tag: 'Daily Bonus', icon: '📅' },
+    { label: '3 Days', hours: 72, tag: 'Weekend Special', icon: '🗓️' },
+    { label: '7 Days', hours: 168, tag: 'Festive Week', icon: '🎁' },
+];
+
+const QUICK_EMOJIS = ['🎁', '💎', '👑', '🚀', '🍾', '🏆', '🌹', '💝', '🧸', '🏎️', '🏰', '💍', '🦄', '🎆', '⭐'];
 
 export default function GiftAdd({ editData, onSaved }) {
     const navigate = useNavigate();
-    const [form, setForm] = useState({ title: '', coin: '50', status: '1' });
+    const [form, setForm] = useState({ 
+        title: '', 
+        description: 'Claim your exclusive free coins before time runs out!',
+        coin: '50', 
+        durationHours: 24,
+        customHours: '',
+        useCustomExpiry: false,
+        customDate: '',
+        status: '1' 
+    });
     const [image, setImage] = useState(null);
     const [preview, setPreview] = useState('');
     const [selectedEmoji, setSelectedEmoji] = useState('🎁');
@@ -24,9 +45,20 @@ export default function GiftAdd({ editData, onSaved }) {
 
     useEffect(() => {
         if (editData) {
+            let initialHours = editData.durationHours || 24;
+            let customDateStr = '';
+            if (editData.expiresAt) {
+                const exp = new Date(editData.expiresAt);
+                customDateStr = exp.toISOString().slice(0, 16);
+            }
             setForm({
                 title: editData.title || '',
-                coin: String(editData.coin ?? '50'),
+                description: editData.description || 'Claim your exclusive free coins before time runs out!',
+                coin: String(editData.coinReward ?? editData.coinCost ?? editData.coin ?? '50'),
+                durationHours: initialHours,
+                customHours: String(initialHours),
+                useCustomExpiry: false,
+                customDate: customDateStr,
                 status: String(editData.status ?? 1)
             });
             if (editData.image) {
@@ -85,29 +117,26 @@ export default function GiftAdd({ editData, onSaved }) {
 
     const handleSelectEmoji = (emoji) => {
         setSelectedEmoji(emoji);
-        if (!preview) {
-            // Give a hint in title if empty
-            if (!form.title) {
-                const names = {
-                    '🌹': 'Romantic Rose',
-                    '💝': 'Heart Gift Box',
-                    '🧸': 'Cuddly Teddy',
-                    '💎': 'Sparkling Diamond',
-                    '👑': 'Royal Crown',
-                    '🏎️': 'Luxury Sports Car',
-                    '🚀': 'Super Rocket',
-                    '🛥️': 'Private Yacht',
-                    '🏰': 'Dream Castle',
-                    '🏆': 'Champion Trophy',
-                    '🍾': 'Celebration Champagne',
-                    '💍': 'Diamond Ring',
-                    '🦄': 'Magical Unicorn',
-                    '🎆': 'Grand Fireworks',
-                    '🎁': 'Mystery Box'
-                };
-                if (names[emoji]) {
-                    setForm(p => ({ ...p, title: names[emoji] }));
-                }
+        if (!preview && !form.title) {
+            const names = {
+                '🎁': 'Surprise Coin Drop! 🎁',
+                '💎': 'Diamond Mystery Box 💎',
+                '👑': 'Royal Bonus Drop 👑',
+                '🚀': 'Rocket Boost Gift 🚀',
+                '🍾': 'Celebration Coin Drop 🍾',
+                '🏆': 'Winner\'s Free Gift 🏆',
+                '🌹': 'Romantic Spark Box 🌹',
+                '💝': 'Special Love Box 💝',
+                '🧸': 'Cuddly Surprise 🧸',
+                '🏎️': 'Turbo Flash Drop 🏎️',
+                '🏰': 'Kingdom Coin Drop 🏰',
+                '💍': 'Golden Treasure Box 💍',
+                '🦄': 'Magical Free Coins 🦄',
+                '🎆': 'Festival Fireworks Drop 🎆',
+                '⭐': 'Lucky Star Drop ⭐'
+            };
+            if (names[emoji]) {
+                setForm(p => ({ ...p, title: names[emoji] }));
             }
         }
     };
@@ -115,11 +144,30 @@ export default function GiftAdd({ editData, onSaved }) {
     const triggerTestAnimation = () => {
         setIsAnimating(true);
         confetti({
-            particleCount: 80,
-            spread: 70,
+            particleCount: 100,
+            spread: 80,
             origin: { y: 0.6 }
         });
-        setTimeout(() => setIsAnimating(false), 1500);
+        setTimeout(() => setIsAnimating(false), 1800);
+    };
+
+    // Calculate preview expiry timestamp
+    const getCalculatedExpiryText = () => {
+        if (form.useCustomExpiry && form.customDate) {
+            const d = new Date(form.customDate);
+            if (!isNaN(d.getTime())) {
+                return d.toLocaleString('en-IN', { 
+                    dateStyle: 'full', 
+                    timeStyle: 'short' 
+                });
+            }
+        }
+        const hours = Number(form.durationHours) || 24;
+        const targetDate = new Date(Date.now() + hours * 60 * 60 * 1000);
+        return targetDate.toLocaleString('en-IN', { 
+            dateStyle: 'full', 
+            timeStyle: 'short' 
+        });
     };
 
     const handleSubmit = async (e) => {
@@ -131,12 +179,30 @@ export default function GiftAdd({ editData, onSaved }) {
             return;
         }
 
+        const hoursVal = Number(form.durationHours);
+        if (!form.useCustomExpiry && (isNaN(hoursVal) || hoursVal <= 0)) {
+            toast.error('Please select or specify a valid duration in hours');
+            return;
+        }
+
         setLoading(true);
         try {
             const fd = new FormData();
-            if (form.title) fd.append('title', form.title.trim());
+            fd.append('title', form.title.trim() || `Free ${coinVal} Coins Drop 🎁`);
+            fd.append('description', form.description.trim());
             fd.append('coin', String(coinVal));
+            fd.append('coinReward', String(coinVal));
             fd.append('status', form.status);
+            fd.append('type', 'free_claim');
+
+            if (form.useCustomExpiry && form.customDate) {
+                fd.append('expiresAt', new Date(form.customDate).toISOString());
+            } else {
+                fd.append('durationHours', String(hoursVal));
+                const calcExp = new Date(Date.now() + hoursVal * 60 * 60 * 1000);
+                fd.append('expiresAt', calcExp.toISOString());
+            }
+
             if (image) {
                 fd.append('image', image);
             }
@@ -145,12 +211,12 @@ export default function GiftAdd({ editData, onSaved }) {
                 await api.put(`/gifts/${editData._id}`, fd, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                toast.success('Gift updated successfully!');
+                toast.success('Gift drop updated successfully!');
             } else {
                 await api.post('/gifts', fd, {
                     headers: { 'Content-Type': 'multipart/form-data' }
                 });
-                toast.success('New virtual gift created successfully!');
+                toast.success('New Gift Drop created and scheduled successfully!');
             }
 
             handleBack();
@@ -163,21 +229,20 @@ export default function GiftAdd({ editData, onSaved }) {
     };
 
     const coinNumber = Number(form.coin) || 0;
-    const inrValue = (coinNumber / 3).toFixed(2);
 
     return (
         <div style={{ animation: 'fadeIn 0.35s ease' }}>
             <style>{`
                 .gift-form-wrapper {
-                    max-width: 1080px;
+                    max-width: 1160px;
                     margin: 0 auto;
                 }
                 .gift-layout-grid {
                     display: grid;
-                    grid-template-columns: 1.2fr 0.8fr;
+                    grid-template-columns: 1.25fr 0.75fr;
                     gap: 24px;
                 }
-                @media (max-width: 860px) {
+                @media (max-width: 960px) {
                     .gift-layout-grid {
                         grid-template-columns: 1fr;
                     }
@@ -204,18 +269,18 @@ export default function GiftAdd({ editData, onSaved }) {
                     background: rgba(251, 111, 146, 0.04);
                 }
                 .coin-chip {
-                    padding: 6px 12px;
+                    padding: 7px 14px;
                     border-radius: 20px;
                     background: var(--bg-input);
                     border: 1px solid var(--border-color);
                     color: var(--text-secondary);
-                    font-size: 0.8rem;
-                    font-weight: 600;
+                    font-size: 0.82rem;
+                    font-weight: 700;
                     cursor: pointer;
                     transition: all 0.2s ease;
                     display: inline-flex;
                     align-items: center;
-                    gap: 4px;
+                    gap: 5px;
                 }
                 .coin-chip:hover {
                     border-color: #ffb703;
@@ -223,23 +288,55 @@ export default function GiftAdd({ editData, onSaved }) {
                     background: rgba(255, 183, 3, 0.08);
                 }
                 .coin-chip.selected {
-                    background: rgba(255, 183, 3, 0.15);
+                    background: rgba(255, 183, 3, 0.16);
                     border-color: #ffb703;
                     color: #ffb703;
-                    box-shadow: 0 2px 8px rgba(255, 183, 3, 0.2);
+                    box-shadow: 0 2px 8px rgba(255, 183, 3, 0.25);
+                }
+                .duration-preset-grid {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    gap: 10px;
+                    margin-top: 10px;
+                }
+                @media (max-width: 600px) {
+                    .duration-preset-grid {
+                        grid-template-columns: repeat(2, 1fr);
+                    }
+                }
+                .duration-card {
+                    padding: 12px 14px;
+                    border-radius: 12px;
+                    background: var(--bg-input);
+                    border: 1.5px solid var(--border-color);
+                    cursor: pointer;
+                    text-align: left;
+                    transition: all 0.2s ease;
+                    display: flex;
+                    flex-direction: column;
+                    gap: 4px;
+                }
+                .duration-card:hover {
+                    border-color: var(--primary);
+                    transform: translateY(-2px);
+                }
+                .duration-card.selected {
+                    border-color: var(--primary);
+                    background: rgba(251, 111, 146, 0.12);
+                    box-shadow: 0 4px 14px rgba(251, 111, 146, 0.2);
                 }
                 .emoji-selector-grid {
                     display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+                    grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
                     gap: 8px;
                     margin-top: 10px;
                 }
                 .emoji-chip-btn {
-                    height: 40px;
+                    height: 42px;
                     border-radius: 10px;
                     border: 1px solid var(--border-color);
                     background: var(--bg-input);
-                    font-size: 1.3rem;
+                    font-size: 1.35rem;
                     cursor: pointer;
                     display: flex;
                     align-items: center;
@@ -247,37 +344,43 @@ export default function GiftAdd({ editData, onSaved }) {
                     transition: all 0.2s ease;
                 }
                 .emoji-chip-btn:hover {
-                    transform: scale(1.1);
+                    transform: scale(1.12);
                     border-color: var(--primary);
-                    background: var(--bg-card-hover);
                 }
                 .emoji-chip-btn.active {
                     border-color: var(--primary);
-                    background: rgba(251, 111, 146, 0.15);
-                    box-shadow: 0 0 10px rgba(251, 111, 146, 0.3);
+                    background: rgba(251, 111, 146, 0.2);
+                    box-shadow: 0 0 12px rgba(251, 111, 146, 0.35);
                 }
                 .mockup-preview-card {
-                    background: linear-gradient(145deg, #1e1b2e 0%, #151221 100%);
-                    border: 1px solid rgba(251, 111, 146, 0.25);
-                    border-radius: 20px;
-                    padding: 24px;
+                    background: linear-gradient(150deg, #181528 0%, #0d0a18 100%);
+                    border: 1px solid rgba(251, 111, 146, 0.3);
+                    border-radius: 24px;
+                    padding: 26px 20px;
                     text-align: center;
                     position: relative;
                     overflow: hidden;
-                    box-shadow: 0 12px 30px rgba(0,0,0,0.35);
+                    box-shadow: 0 16px 36px rgba(0,0,0,0.45);
                 }
-                .gift-bounce {
-                    animation: giftPulse 1.2s infinite ease-in-out;
+                .gift-bounce-anim {
+                    animation: giftFloat 1.8s infinite ease-in-out;
                 }
-                @keyframes giftPulse {
-                    0%, 100% { transform: scale(1) translateY(0); }
-                    50% { transform: scale(1.08) translateY(-6px); }
+                @keyframes giftFloat {
+                    0%, 100% { transform: translateY(0) scale(1) rotate(0deg); }
+                    50% { transform: translateY(-8px) scale(1.06) rotate(3deg); }
+                }
+                .gift-pulse-aura {
+                    animation: auraGlow 2s infinite alternate;
+                }
+                @keyframes auraGlow {
+                    0% { opacity: 0.3; transform: translate(-50%, -50%) scale(0.9); }
+                    100% { opacity: 0.7; transform: translate(-50%, -50%) scale(1.2); }
                 }
             `}</style>
 
             <div className="gift-form-wrapper">
-                {/* Header with Back Button */}
-                <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                {/* Header */}
+                <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24, flexWrap: 'wrap', gap: 14 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                         <button
                             type="button"
@@ -288,46 +391,72 @@ export default function GiftAdd({ editData, onSaved }) {
                             <MdArrowBack size={18} /> Back to List
                         </button>
                         <div>
-                            <h1 className="page-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                                <MdCardGiftcard style={{ color: 'var(--primary)' }} />
-                                {editData ? 'Edit Virtual Gift' : 'Create New Virtual Gift'}
+                            <h1 className="page-title" style={{ margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                <div style={{
+                                    width: 38,
+                                    height: 38,
+                                    borderRadius: 10,
+                                    background: 'linear-gradient(135deg, #fb6f92 0%, #ff8fab 100%)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    color: '#fff',
+                                    boxShadow: '0 4px 12px rgba(251, 111, 146, 0.3)'
+                                }}>
+                                    <MdCardGiftcard size={22} />
+                                </div>
+                                {editData ? 'Edit Timed Gift Drop' : 'Create Timed Gift Drop'}
                             </h1>
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.82rem', margin: '2px 0 0 0' }}>
-                                Set gift animation asset, coin valuation, and live member stream availability.
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.84rem', margin: '3px 0 0 0' }}>
+                                Schedule time-limited free coin drops (e.g. 7h, 1d) that pop up as a Gift Box on customer PWAs.
                             </p>
                         </div>
                     </div>
                 </div>
 
                 <div className="gift-layout-grid">
-                    {/* Form Left Side */}
+                    {/* Left Form Area */}
                     <div className="gift-card-box">
                         <form onSubmit={handleSubmit}>
                             {/* Gift Title */}
                             <div className="form-group" style={{ marginBottom: 20 }}>
                                 <label className="form-label" style={{ fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Gift Title / Name</span>
-                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 400 }}>Optional</span>
+                                    <span>Gift Drop Title</span>
+                                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Shown in PWA Popup</span>
                                 </label>
                                 <input
                                     className="form-input"
                                     type="text"
-                                    placeholder="e.g. Royal Crown, Romantic Rose"
+                                    placeholder="e.g. Weekend Special Drop 🎁, Festive Welcome Box"
                                     value={form.title}
                                     onChange={e => setForm(p => ({ ...p, title: e.target.value }))}
                                 />
                             </div>
 
-                            {/* Gift Coin Value */}
+                            {/* Gift Description */}
                             <div className="form-group" style={{ marginBottom: 20 }}>
+                                <label className="form-label" style={{ fontWeight: 600 }}>
+                                    Popup Subtitle / Note
+                                </label>
+                                <input
+                                    className="form-input"
+                                    type="text"
+                                    placeholder="e.g. Claim your free coins before the timer expires!"
+                                    value={form.description}
+                                    onChange={e => setForm(p => ({ ...p, description: e.target.value }))}
+                                />
+                            </div>
+
+                            {/* Free Coin Reward Amount */}
+                            <div className="form-group" style={{ marginBottom: 24 }}>
                                 <label className="form-label" style={{ fontWeight: 600, display: 'flex', justifyContent: 'space-between' }}>
-                                    <span>Coin Value (🪙)</span>
-                                    <span style={{ color: '#ffb703', fontWeight: 600, fontSize: '0.8rem' }}>
-                                        ≈ ₹{inrValue} INR
+                                    <span>Free Coin Reward (🪙)</span>
+                                    <span style={{ color: '#ffb703', fontWeight: 700, fontSize: '0.82rem' }}>
+                                        Credited directly to customer wallet
                                     </span>
                                 </label>
                                 <div style={{ position: 'relative' }}>
-                                    <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: '1.1rem' }}>
+                                    <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', fontSize: '1.2rem' }}>
                                         🪙
                                     </span>
                                     <input
@@ -336,7 +465,7 @@ export default function GiftAdd({ editData, onSaved }) {
                                         min="1"
                                         step="1"
                                         placeholder="e.g. 50"
-                                        style={{ paddingLeft: 42, fontSize: '1rem', fontWeight: 700 }}
+                                        style={{ paddingLeft: 44, fontSize: '1.05rem', fontWeight: 800 }}
                                         value={form.coin}
                                         onChange={e => setForm(p => ({ ...p, coin: e.target.value }))}
                                         required
@@ -352,16 +481,113 @@ export default function GiftAdd({ editData, onSaved }) {
                                             className={`coin-chip ${Number(form.coin) === c ? 'selected' : ''}`}
                                             onClick={() => setForm(p => ({ ...p, coin: String(c) }))}
                                         >
-                                            +{c}
+                                            +{c} Coins
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            {/* Image Upload Zone */}
+                            {/* Time Period / Expiration Duration System */}
+                            <div className="form-group" style={{ marginBottom: 24, padding: '18px 20px', borderRadius: 'var(--radius-md)', background: 'rgba(251, 111, 146, 0.04)', border: '1.5px solid rgba(251, 111, 146, 0.2)' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                                    <label className="form-label" style={{ fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 7, color: 'var(--text-primary)' }}>
+                                        <MdTimer style={{ color: 'var(--primary)', fontSize: '1.2rem' }} />
+                                        Gift Expiration & Duration Period
+                                    </label>
+                                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', background: 'rgba(251, 111, 146, 0.12)', padding: '2px 8px', borderRadius: 10 }}>
+                                        Auto-Expires
+                                    </span>
+                                </div>
+                                <p style={{ fontSize: '0.78rem', color: 'var(--text-muted)', margin: '0 0 12px 0' }}>
+                                    Choose how long customers have to claim this gift. A live countdown timer is shown on the PWA.
+                                </p>
+
+                                {/* Duration Presets Grid */}
+                                <div className="duration-preset-grid">
+                                    {DURATION_PRESETS.map((dp) => {
+                                        const isSelected = !form.useCustomExpiry && form.durationHours === dp.hours;
+                                        return (
+                                            <div
+                                                key={dp.hours}
+                                                className={`duration-card ${isSelected ? 'selected' : ''}`}
+                                                onClick={() => setForm(p => ({ ...p, durationHours: dp.hours, useCustomExpiry: false }))}
+                                            >
+                                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                                    <span style={{ fontSize: '1.1rem' }}>{dp.icon}</span>
+                                                    <span style={{ fontSize: '0.7rem', fontWeight: 700, color: isSelected ? 'var(--primary)' : 'var(--text-muted)' }}>
+                                                        {dp.tag}
+                                                    </span>
+                                                </div>
+                                                <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)' }}>
+                                                    {dp.label}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Custom Hours or Specific Date Toggle */}
+                                <div style={{ marginTop: 14, display: 'flex', gap: 14, flexWrap: 'wrap', alignItems: 'center' }}>
+                                    <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 600, color: 'var(--text-secondary)', cursor: 'pointer' }}>
+                                        <input
+                                            type="checkbox"
+                                            checked={form.useCustomExpiry}
+                                            onChange={e => setForm(p => ({ ...p, useCustomExpiry: e.target.checked }))}
+                                            style={{ accentColor: 'var(--primary)' }}
+                                        />
+                                        <span>Set Specific Date & Time</span>
+                                    </label>
+                                </div>
+
+                                {form.useCustomExpiry ? (
+                                    <div style={{ marginTop: 12 }}>
+                                        <label style={{ fontSize: '0.76rem', color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>Select exact expiration date and time:</label>
+                                        <input
+                                            type="datetime-local"
+                                            className="form-input"
+                                            value={form.customDate}
+                                            onChange={e => setForm(p => ({ ...p, customDate: e.target.value }))}
+                                            required
+                                        />
+                                    </div>
+                                ) : (
+                                    <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 10 }}>
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Or custom hours:</span>
+                                        <input
+                                            type="number"
+                                            className="form-input"
+                                            style={{ width: 100, padding: '6px 10px', fontSize: '0.85rem' }}
+                                            min="1"
+                                            placeholder="Hours"
+                                            value={form.durationHours}
+                                            onChange={e => setForm(p => ({ ...p, durationHours: Number(e.target.value) }))}
+                                        />
+                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>hours from now</span>
+                                    </div>
+                                )}
+
+                                {/* Expiry Preview Bar */}
+                                <div style={{
+                                    marginTop: 14,
+                                    padding: '10px 14px',
+                                    borderRadius: 10,
+                                    background: 'rgba(0,0,0,0.2)',
+                                    border: '1px solid rgba(255,255,255,0.08)',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 10
+                                }}>
+                                    <MdAccessTime style={{ color: '#ffb703', fontSize: '1.2rem', flexShrink: 0 }} />
+                                    <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                                        Expires on: <strong style={{ color: '#fff' }}>{getCalculatedExpiryText()}</strong>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Gift Image / Visual Artwork */}
                             <div className="form-group" style={{ marginBottom: 20 }}>
                                 <label className="form-label" style={{ fontWeight: 600 }}>
-                                    Gift Image / Animation Artwork
+                                    Gift Box Artwork / Animated Icon
                                 </label>
                                 
                                 {preview ? (
@@ -369,15 +595,15 @@ export default function GiftAdd({ editData, onSaved }) {
                                         position: 'relative',
                                         borderRadius: 'var(--radius-md)',
                                         border: '1px solid var(--border-color)',
-                                        padding: 20,
+                                        padding: 16,
                                         background: 'rgba(255, 255, 255, 0.02)',
                                         display: 'flex',
                                         alignItems: 'center',
-                                        gap: 20
+                                        gap: 16
                                     }}>
                                         <div style={{
-                                            width: 80,
-                                            height: 80,
+                                            width: 72,
+                                            height: 72,
                                             borderRadius: 14,
                                             background: 'rgba(251, 111, 146, 0.1)',
                                             border: '1px solid rgba(251, 111, 146, 0.3)',
@@ -389,13 +615,10 @@ export default function GiftAdd({ editData, onSaved }) {
                                             <img src={preview} alt="Gift preview" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                                         </div>
                                         <div style={{ flex: 1 }}>
-                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.88rem' }}>
                                                 {image ? image.name : 'Current Image Asset'}
                                             </div>
-                                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                                                {image ? `${(image.size / 1024).toFixed(1)} KB` : 'Uploaded'}
-                                            </div>
-                                            <div style={{ display: 'flex', gap: 10, marginTop: 10 }}>
+                                            <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                                                 <button
                                                     type="button"
                                                     className="btn btn-outline btn-sm"
@@ -431,20 +654,20 @@ export default function GiftAdd({ editData, onSaved }) {
                                             style={{ display: 'none' }}
                                             onChange={handleImageChange}
                                         />
-                                        <MdCloudUpload style={{ fontSize: '2.5rem', color: 'var(--primary)', marginBottom: 6 }} />
-                                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem' }}>
-                                            Click or Drag & Drop Gift Image
+                                        <MdCloudUpload style={{ fontSize: '2.4rem', color: 'var(--primary)', marginBottom: 6 }} />
+                                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.9rem' }}>
+                                            Click or Drag & Drop Custom Gift Artwork
                                         </div>
-                                        <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                                        <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', marginTop: 2 }}>
                                             Supports PNG, JPG, WebP, SVG, GIF (Up to 5MB)
                                         </div>
                                     </div>
                                 )}
 
-                                {/* Quick Emoji / Template Selector */}
-                                <div style={{ marginTop: 16 }}>
-                                    <label style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
-                                        Or pick a preset animated emoji:
+                                {/* Quick Emoji / 3D Icon Selector */}
+                                <div style={{ marginTop: 14 }}>
+                                    <label style={{ fontSize: '0.78rem', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                                        Or select a 3D animated emoji badge:
                                     </label>
                                     <div className="emoji-selector-grid">
                                         {QUICK_EMOJIS.map(emoji => (
@@ -464,7 +687,7 @@ export default function GiftAdd({ editData, onSaved }) {
 
                             {/* Visibility Status */}
                             <div className="form-group" style={{ marginBottom: 24 }}>
-                                <label className="form-label" style={{ fontWeight: 600 }}>Publishing Status</label>
+                                <label className="form-label" style={{ fontWeight: 600 }}>Drop Publishing Status</label>
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                                     <label style={{
                                         display: 'flex',
@@ -475,7 +698,6 @@ export default function GiftAdd({ editData, onSaved }) {
                                         border: `1px solid ${form.status === '1' ? 'var(--primary)' : 'var(--border-color)'}`,
                                         background: form.status === '1' ? 'rgba(251, 111, 146, 0.08)' : 'var(--bg-input)',
                                         cursor: 'pointer',
-                                        transition: 'all 0.2s ease'
                                     }}>
                                         <input
                                             type="radio"
@@ -486,8 +708,8 @@ export default function GiftAdd({ editData, onSaved }) {
                                             style={{ accentColor: 'var(--primary)' }}
                                         />
                                         <div>
-                                            <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>Published (Active)</div>
-                                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Visible in member gift tray</div>
+                                            <div style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--text-primary)' }}>Live on PWA (Active)</div>
+                                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Immediately claimable by customers</div>
                                         </div>
                                     </label>
 
@@ -500,7 +722,6 @@ export default function GiftAdd({ editData, onSaved }) {
                                         border: `1px solid ${form.status === '0' ? 'var(--primary)' : 'var(--border-color)'}`,
                                         background: form.status === '0' ? 'rgba(251, 111, 146, 0.08)' : 'var(--bg-input)',
                                         cursor: 'pointer',
-                                        transition: 'all 0.2s ease'
                                     }}>
                                         <input
                                             type="radio"
@@ -511,20 +732,20 @@ export default function GiftAdd({ editData, onSaved }) {
                                             style={{ accentColor: 'var(--primary)' }}
                                         />
                                         <div>
-                                            <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-primary)' }}>Unpublished (Hidden)</div>
-                                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Temporarily disabled</div>
+                                            <div style={{ fontWeight: 700, fontSize: '0.86rem', color: 'var(--text-primary)' }}>Draft / Unpublished</div>
+                                            <div style={{ fontSize: '0.74rem', color: 'var(--text-muted)' }}>Hidden from customer app</div>
                                         </div>
                                     </label>
                                 </div>
                             </div>
 
                             {/* Submit and Cancel Buttons */}
-                            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', paddingTop: 10, borderTop: '1px solid var(--border-color)' }}>
+                            <div style={{ display: 'flex', gap: 12, justifyContent: 'flex-end', paddingTop: 14, borderTop: '1px solid var(--border-color)' }}>
                                 <button
                                     type="button"
                                     className="btn btn-outline"
                                     onClick={handleBack}
-                                    style={{ padding: '10px 20px' }}
+                                    style={{ padding: '10px 22px' }}
                                 >
                                     Cancel
                                 </button>
@@ -532,67 +753,67 @@ export default function GiftAdd({ editData, onSaved }) {
                                     type="submit"
                                     className="btn btn-primary"
                                     disabled={loading}
-                                    style={{ padding: '10px 24px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
+                                    style={{ padding: '10px 26px', display: 'inline-flex', alignItems: 'center', gap: 8 }}
                                 >
                                     {loading ? (
                                         <>
                                             <span className="loading-spinner" style={{ width: 16, height: 16, borderWidth: 2 }} />
-                                            Saving Gift...
+                                            Scheduling Drop...
                                         </>
                                     ) : editData ? (
-                                        'Update Virtual Gift'
+                                        'Save & Update Drop'
                                     ) : (
-                                        'Create Virtual Gift'
+                                        '🚀 Publish Timed Gift Drop'
                                     )}
                                 </button>
                             </div>
                         </form>
                     </div>
 
-                    {/* Right Side: Live In-App Visualizer */}
+                    {/* Right Side: Live Customer PWA Visualizer */}
                     <div>
                         <div className="gift-card-box" style={{ position: 'sticky', top: 90 }}>
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                                <div style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <MdAutoAwesome style={{ color: '#ffb703' }} /> Live In-App Preview
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+                                <div style={{ fontWeight: 800, fontSize: '0.92rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 7 }}>
+                                    <MdAutoAwesome style={{ color: '#ffb703' }} /> Live Customer PWA Popup
                                 </div>
                                 <span className={`badge ${form.status === '1' ? 'badge-publish' : 'badge-unpublish'}`}>
                                     {form.status === '1' ? 'Live on App' : 'Hidden'}
                                 </span>
                             </div>
 
-                            <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: 18 }}>
-                                Real-time simulation of how this gift appears to users during live video calls and chat conversations.
+                            <p style={{ color: 'var(--text-muted)', fontSize: '0.78rem', marginBottom: 18, lineHeight: 1.4 }}>
+                                Real-time simulation of the glowing Gift Box popup and unbox animation seen by all app customers.
                             </p>
 
                             {/* Mockup Card */}
                             <div className="mockup-preview-card">
-                                {/* Floating Background Glow */}
-                                <div style={{
+                                {/* Ambient Glow Aura */}
+                                <div className="gift-pulse-aura" style={{
                                     position: 'absolute',
-                                    top: '20%',
+                                    top: '30%',
                                     left: '50%',
-                                    transform: 'translate(-50%, -50%)',
-                                    width: 140,
-                                    height: 140,
-                                    background: 'radial-gradient(circle, rgba(251,111,146,0.35) 0%, rgba(150,16,255,0) 70%)',
-                                    filter: 'blur(20px)',
+                                    width: 160,
+                                    height: 160,
+                                    background: 'radial-gradient(circle, rgba(251,111,146,0.45) 0%, rgba(150,16,255,0) 70%)',
+                                    filter: 'blur(24px)',
                                     pointerEvents: 'none'
                                 }} />
 
-                                <div className={isAnimating ? 'gift-bounce' : ''} style={{
-                                    width: 110,
-                                    height: 110,
-                                    margin: '0 auto 16px',
+                                {/* Floating 3D Gift Box Visual */}
+                                <div className={isAnimating ? 'gift-bounce-anim' : 'gift-bounce-anim'} style={{
+                                    width: 96,
+                                    height: 96,
+                                    margin: '0 auto 14px',
                                     borderRadius: 22,
-                                    background: 'linear-gradient(135deg, rgba(251, 111, 146, 0.2) 0%, rgba(150, 16, 255, 0.25) 100%)',
-                                    border: '2px solid rgba(251, 111, 146, 0.4)',
+                                    background: 'linear-gradient(135deg, rgba(251, 111, 146, 0.25) 0%, rgba(150, 16, 255, 0.3) 100%)',
+                                    border: '2px solid rgba(251, 111, 146, 0.5)',
                                     display: 'flex',
                                     alignItems: 'center',
                                     justifyContent: 'center',
-                                    fontSize: '3.5rem',
+                                    fontSize: '3.4rem',
                                     overflow: 'hidden',
-                                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                                    boxShadow: '0 10px 28px rgba(0,0,0,0.5)',
                                     position: 'relative'
                                 }}>
                                     {preview ? (
@@ -606,59 +827,76 @@ export default function GiftAdd({ editData, onSaved }) {
                                     )}
                                 </div>
 
-                                <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', marginBottom: 6 }}>
-                                    {form.title || (preview ? 'Custom Virtual Gift' : 'Virtual Gift')}
+                                <div style={{ fontSize: '1.1rem', fontWeight: 900, color: '#fff', marginBottom: 4 }}>
+                                    {form.title || 'Surprise Coin Drop! 🎁'}
                                 </div>
 
-                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 16px', borderRadius: 20, background: 'rgba(255, 183, 3, 0.2)', border: '1px solid #ffb703', color: '#ffb703', fontWeight: 800, fontSize: '0.95rem' }}>
+                                <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.7)', marginBottom: 14, padding: '0 10px' }}>
+                                    {form.description}
+                                </div>
+
+                                {/* Coin Reward Badge */}
+                                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '6px 18px', borderRadius: 20, background: 'rgba(255, 183, 3, 0.2)', border: '1px solid #ffb703', color: '#ffb703', fontWeight: 900, fontSize: '1.05rem', marginBottom: 12 }}>
                                     <span>🪙</span>
-                                    <span>{coinNumber.toLocaleString()} Coins</span>
+                                    <span>+{coinNumber.toLocaleString()} FREE COINS</span>
                                 </div>
 
-                                <div style={{ marginTop: 14, fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)' }}>
-                                    Host Payout Rate: <strong style={{ color: '#00d68f' }}>₹{inrValue} INR</strong> (3 Coins = ₹1)
+                                {/* Live Countdown Mock */}
+                                <div style={{
+                                    background: 'rgba(255, 255, 255, 0.08)',
+                                    borderRadius: 12,
+                                    padding: '8px 12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: 6,
+                                    color: '#ff8fab',
+                                    fontSize: '0.8rem',
+                                    fontWeight: 700,
+                                    marginBottom: 16
+                                }}>
+                                    <span>⏳</span>
+                                    <span>Expires in: {form.durationHours || 24}h 00m 00s</span>
                                 </div>
 
                                 <button
                                     type="button"
                                     onClick={triggerTestAnimation}
                                     style={{
-                                        marginTop: 20,
                                         width: '100%',
-                                        padding: '10px',
-                                        borderRadius: 12,
+                                        padding: '11px',
+                                        borderRadius: 14,
                                         background: 'linear-gradient(135deg, #fb6f92 0%, #ff8fab 100%)',
                                         border: 'none',
                                         color: '#fff',
-                                        fontWeight: 700,
-                                        fontSize: '0.85rem',
+                                        fontWeight: 800,
+                                        fontSize: '0.88rem',
                                         cursor: 'pointer',
                                         display: 'flex',
                                         alignItems: 'center',
                                         justifyContent: 'center',
                                         gap: 6,
-                                        boxShadow: '0 4px 15px rgba(251, 111, 146, 0.4)',
+                                        boxShadow: '0 4px 18px rgba(251, 111, 146, 0.45)',
                                         transition: 'all 0.2s ease'
                                     }}
                                 >
-                                    <MdPlayArrow size={18} /> Test Sending Animation
+                                    <MdPlayArrow size={20} /> Test Unbox & Confetti
                                 </button>
                             </div>
 
-                            {/* Info Box */}
                             <div style={{
-                                marginTop: 18,
-                                padding: 14,
+                                marginTop: 16,
+                                padding: 12,
                                 borderRadius: 12,
                                 background: 'rgba(255, 255, 255, 0.02)',
                                 border: '1px solid var(--border-color)',
                                 display: 'flex',
-                                gap: 10,
+                                gap: 8,
                                 alignItems: 'flex-start'
                             }}>
                                 <MdInfoOutline style={{ color: 'var(--primary)', flexShrink: 0, marginTop: 2 }} />
                                 <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', lineHeight: '1.4' }}>
-                                    Virtual gifts sent by users during live video calls or chat instantly credit coin earnings to the host agent's wallet.
+                                    When a customer claims this gift on the PWA, their coin balance updates instantly and cannot be claimed twice by the same user.
                                 </div>
                             </div>
                         </div>

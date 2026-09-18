@@ -1,7 +1,7 @@
 ﻿import { useState, useEffect, useCallback } from 'react';
 import {
   MdCurrencyRupee, MdCheckCircle, MdCancel, MdPending, MdSearch,
-  MdRefresh, MdPerson, MdImage, MdClose, MdOpenInNew,
+  MdRefresh, MdPerson, MdImage, MdClose, MdOpenInNew, MdWhatsapp,
 } from 'react-icons/md';
 import api from '../utils/api';
 
@@ -12,6 +12,15 @@ const STATUS_COLORS = {
 };
 
 const PKG_TYPE_LABEL = { recharge: 'Coin Recharge', audio: 'Audio Bundle', video: 'Video Bundle' };
+const PAYMENT_METHOD_LABEL = {
+  qr_federal:   { label: 'QR - Federal Bank',   color: '#1a56db', bg: '#eff6ff' },
+  qr_hdfc:      { label: 'QR - HDFC Bank',      color: '#004C8F', bg: '#eff6ff' },
+  bank_federal: { label: 'Bank - Federal Bank',  color: '#1a56db', bg: '#eff6ff' },
+  bank_hdfc:    { label: 'Bank - HDFC Bank',     color: '#004C8F', bg: '#eff6ff' },
+  card:         { label: 'Card Payment',         color: '#D51659', bg: '#fdf2f8' },
+  whatsapp:     { label: 'Via WhatsApp',         color: '#128C7E', bg: '#f0fdf4' },
+  other:        { label: 'Other',                color: '#64748b', bg: '#f8fafc' },
+};
 
 export default function CoinRequests() {
   const [requests, setRequests]     = useState([]);
@@ -231,25 +240,29 @@ export default function CoinRequests() {
                   </div>
                 </div>
 
-                {/* Row 3: Package type + time + screenshot thumb */}
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <div>
-                    <span style={{ fontSize: 11, color: '#64748b', fontWeight: 600, background: '#f1f5f9', padding: '3px 8px', borderRadius: 6 }}>
-                      {PKG_TYPE_LABEL[req.packageType] || 'Recharge'}
-                    </span>
+                {/* Row 3: Payment method + time + screenshot thumb */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    {(() => {
+                      const pm = PAYMENT_METHOD_LABEL[req.paymentMethod] || PAYMENT_METHOD_LABEL.other;
+                      return (
+                        <span style={{ fontSize: 10, color: pm.color, fontWeight: 700, background: pm.bg, padding: '3px 8px', borderRadius: 6, display: 'inline-block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {pm.label}{req.submittedViaWhatsapp ? ' [WA]' : ''}
+                        </span>
+                      );
+                    })()}
                     <p style={{ margin: 0, marginTop: 5, fontSize: 11, color: '#94a3b8' }}>{timeAgo}</p>
                   </div>
-                  {req.screenshotUrl && (
-                    <div
-                      onClick={e => { e.stopPropagation(); setImgModal(req.screenshotUrl); }}
-                      style={{
-                        width: 44, height: 44, borderRadius: 10, overflow: 'hidden', border: '2px solid #e2e8f0',
-                        cursor: 'zoom-in', flexShrink: 0,
-                      }}
-                    >
+                  {req.screenshotUrl ? (
+                    <div onClick={e => { e.stopPropagation(); setImgModal(req.screenshotUrl); }}
+                      style={{ width: 44, height: 44, borderRadius: 10, overflow: 'hidden', border: '2px solid #e2e8f0', cursor: 'zoom-in', flexShrink: 0 }}>
                       <img src={req.screenshotUrl} alt="Payment" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     </div>
-                  )}
+                  ) : req.submittedViaWhatsapp ? (
+                    <div style={{ width: 44, height: 44, borderRadius: 10, background: '#dcfce7', border: '2px solid #86efac', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <MdWhatsapp size={22} color="#16a34a" />
+                    </div>
+                  ) : null}
                 </div>
               </div>
             );
@@ -463,3 +476,4 @@ export default function CoinRequests() {
     </div>
   );
 }
+
