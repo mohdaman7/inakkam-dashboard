@@ -4,7 +4,7 @@ import {
     MdArrowBack, MdPerson, MdVerified, MdEmail, MdPhone,
     MdAccountBalanceWallet, MdChat, MdHistory, MdLockReset, MdBlock,
     MdMailOutline, MdStar, MdAccessTime, MdAttachMoney, MdCheckCircle, MdPaid,
-    MdTrendingUp, MdEdit, MdContentCopy, MdSchedule
+    MdTrendingUp, MdEdit, MdContentCopy, MdSchedule, MdRefresh
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -181,6 +181,32 @@ export default function EliteAgentDetails() {
         } catch (err) {
             setAgent(prev => ({ ...prev, status: targetStatus }));
             toast.success(`Agent status updated to ${targetStatus} (Demo Mode)`);
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
+    const handleReactivate = async () => {
+        setActionLoading(true);
+        try {
+            await api.put(`/elite-agents/${id}/reactivate`);
+            setAgent(prev => ({
+                ...prev,
+                status: 'Active',
+                isBlocked: false,
+                consecutiveMissedCalls: 0,
+                blockedReason: ''
+            }));
+            toast.success(`Agent "${agent.name}" reactivated and missed calls reset to 0!`);
+        } catch (err) {
+            setAgent(prev => ({
+                ...prev,
+                status: 'Active',
+                isBlocked: false,
+                consecutiveMissedCalls: 0,
+                blockedReason: ''
+            }));
+            toast.success(`Agent "${agent.name}" reactivated (Demo Mode)`);
         } finally {
             setActionLoading(false);
         }
@@ -363,18 +389,33 @@ export default function EliteAgentDetails() {
                             {agent.occupation || 'Elite Agent'}
                         </div>
 
-                        {/* Status Badges */}
+                        {/* Status Badges & Attendance */}
                         <div style={{ display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap', marginBottom: 20 }}>
                             <span style={{
                                 fontSize: '0.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
                                 background: 'rgba(255,215,59,0.12)', color: '#ffd43b', border: '1px solid rgba(255,215,59,0.2)'
                             }}>⭐ Premium</span>
+                            {agent.isBlocked || agent.status === 'Blocked' || (agent.consecutiveMissedCalls >= 5) ? (
+                                <span style={{
+                                    fontSize: '0.68rem', fontWeight: 800, padding: '3px 10px', borderRadius: 20,
+                                    background: 'rgba(255,71,87,0.18)', color: '#ff4757', border: '1px solid rgba(255,71,87,0.35)'
+                                }}>🚫 Blocked (5 Misses)</span>
+                            ) : (
+                                <span style={{
+                                    fontSize: '0.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+                                    background: agent.status === 'Active' ? 'rgba(0,214,143,0.12)' : 'rgba(255,61,113,0.12)',
+                                    color: agent.status === 'Active' ? '#00d68f' : '#ff3d71',
+                                    border: `1px solid ${agent.status === 'Active' ? 'rgba(0,214,143,0.2)' : 'rgba(255,61,113,0.2)'}`
+                                }}>{agent.status === 'Active' ? '● Active' : '● Suspended'}</span>
+                            )}
                             <span style={{
                                 fontSize: '0.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
-                                background: agent.status === 'Active' ? 'rgba(0,214,143,0.12)' : 'rgba(255,61,113,0.12)',
-                                color: agent.status === 'Active' ? '#00d68f' : '#ff3d71',
-                                border: `1px solid ${agent.status === 'Active' ? 'rgba(0,214,143,0.2)' : 'rgba(255,61,113,0.2)'}`
-                            }}>{agent.status === 'Active' ? '● Active' : '● Suspended'}</span>
+                                background: (agent.consecutiveMissedCalls || 0) >= 5 ? 'rgba(255,71,87,0.15)' : ((agent.consecutiveMissedCalls || 0) > 0 ? 'rgba(255,165,2,0.15)' : 'rgba(255,255,255,0.06)'),
+                                color: (agent.consecutiveMissedCalls || 0) >= 5 ? '#ff4757' : ((agent.consecutiveMissedCalls || 0) > 0 ? '#ffa502' : 'var(--text-muted)'),
+                                border: '1px solid rgba(255,255,255,0.1)'
+                            }}>
+                                📞 Missed: {agent.consecutiveMissedCalls || 0}/5
+                            </span>
                             <span style={{
                                 fontSize: '0.68rem', fontWeight: 700, padding: '3px 10px', borderRadius: 20,
                                 background: 'rgba(0,149,255,0.12)', color: '#0095ff', border: '1px solid rgba(0,149,255,0.2)'
@@ -408,6 +449,21 @@ export default function EliteAgentDetails() {
 
                         {/* Action Buttons */}
                         <div style={{ display: 'flex', flexDirection: 'column', gap: 8, borderTop: '1px solid var(--border-color)', paddingTop: 18 }}>
+                            {(agent.isBlocked || agent.status === 'Blocked' || (agent.consecutiveMissedCalls >= 5)) && (
+                                <button
+                                    onClick={handleReactivate}
+                                    disabled={actionLoading}
+                                    style={{
+                                        ...actionBtnStyle,
+                                        background: 'linear-gradient(135deg, #00d68f, #00b377)',
+                                        color: '#080612',
+                                        fontWeight: 800,
+                                        boxShadow: '0 4px 15px rgba(0, 214, 143, 0.3)'
+                                    }}
+                                >
+                                    <MdRefresh style={{ fontSize: '1.2rem' }} /> Reactivate & Reset Missed Calls
+                                </button>
+                            )}
                             <button
                                 onClick={handleResetPassword}
                                 disabled={actionLoading}
