@@ -4,7 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import {
     Send, Smile, Phone, Video, Info,
     CheckCircle2, Search, Plus, Mic, MessageSquare,
-    Trash2, Sparkles, PhoneOff, User, ArrowLeft, X
+    Trash2, Sparkles, PhoneOff, User, ArrowLeft, X, Clock
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import api from '../../utils/api';
