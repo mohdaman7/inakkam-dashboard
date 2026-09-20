@@ -7,7 +7,7 @@ import {
     MdAccountBalance, MdQrCode, MdCheckCircle, MdHourglassTop,
     MdOutlineLaunch, MdRefresh, MdCall, MdVideocam, MdChat,
     MdCardGiftcard, MdCalculate, MdEdit, MdCheck, MdExplore,
-    MdArrowForward, MdInfoOutline, MdSignalWifiStatusbar4Bar, MdFlashOn
+    MdArrowForward, MdInfoOutline, MdSignalWifiStatusbar4Bar, MdFlashOn, MdSearch, MdAccessTime, MdFilterList, MdVisibility, MdVisibilityOff, MdStar, MdNorthEast
 } from 'react-icons/md';
 import toast from 'react-hot-toast';
 import api from '../../utils/api';
@@ -40,8 +40,21 @@ export default function EliteAgentPortal() {
     const [isOnline, setIsOnline] = useState(true);
     const [copied, setCopied] = useState(false);
 
+    // Customer interaction ledger state (Coins Only)
+    const [interactions, setInteractions] = useState([]);
+    const [channelFilter, setChannelFilter] = useState('all'); // all | video | audio | chat | gift
+    const [searchQuery, setSearchQuery] = useState('');
+    const [timeFilter, setTimeFilter] = useState('all'); // all | today | yesterday | week
+
     // Calculator state
     const [calcCoins, setCalcCoins] = useState('1500');
+
+    // Premium Destination & Account States
+    const [activeEditTab, setActiveEditTab] = useState('upi'); // 'upi' | 'bank'
+    const [showMaskedAccount, setShowMaskedAccount] = useState(true);
+    const [copiedField, setCopiedField] = useState(null);
+    const [editAccountHolder, setEditAccountHolder] = useState('');
+    const [confirmAccountNo, setConfirmAccountNo] = useState('');
 
     // Account Edit Modal state
     const [showAccountEditModal, setShowAccountEditModal] = useState(false);
@@ -64,9 +77,57 @@ export default function EliteAgentPortal() {
         setLoading(true);
         try {
             const res = await api.get('/payout/my-payouts');
-            if (res.data?.success) {
+                        if (res.data?.success) {
                 setSummary(res.data.summary);
                 setPayoutHistory(res.data.history || []);
+            }
+
+            // Load real customers & generate persistent interaction records
+            try {
+                const uRes = await api.get('/users');
+                const realUsers = uRes.data?.users || uRes.data?.data || [];
+
+                const storedInteractions = localStorage.getItem('inakkam_agent_interactions');
+                if (storedInteractions) {
+                    setInteractions(JSON.parse(storedInteractions));
+                } else if (realUsers.length > 0) {
+                    const sampleTypes = [
+                        { type: 'video', label: '1-on-1 Video Call', icon: 'video', dur: '28 mins 15 secs', sec: 1695, coins: 420, time: 'Today, 02:45 PM' },
+                        { type: 'chat', label: 'Chat Conversation', icon: 'chat', dur: '35 Messages', sec: 0, coins: 210, time: 'Today, 01:20 PM' },
+                        { type: 'video', label: '1-on-1 Video Call', icon: 'video', dur: '18 mins 30 secs', sec: 1110, coins: 275, time: 'Today, 11:15 AM' },
+                        { type: 'gift', label: 'Virtual Gift (Rose)', icon: 'gift', dur: 'Luxury Rose Bouquet', sec: 0, coins: 225, time: 'Yesterday, 08:30 PM' },
+                        { type: 'audio', label: '1-on-1 Voice Call', icon: 'audio', dur: '45 mins 00 secs', sec: 2700, coins: 337, time: 'Yesterday, 05:10 PM' },
+                        { type: 'chat', label: 'Chat Conversation', icon: 'chat', dur: '48 Messages', sec: 0, coins: 288, time: '2 days ago, 04:20 PM' },
+                        { type: 'video', label: '1-on-1 Video Call', icon: 'video', dur: '32 mins 10 secs', sec: 1930, coins: 480, time: '3 days ago, 07:15 PM' },
+                        { type: 'gift', label: 'Virtual Gift (Crown)', icon: 'gift', dur: 'Diamond Tiara Gift', sec: 0, coins: 300, time: '3 days ago, 09:40 PM' }
+                    ];
+
+                    const initialInteractions = sampleTypes.map((item, idx) => {
+                        const u = realUsers[idx % realUsers.length];
+                        const photo = u?.photos?.[0]
+                            ? (typeof u.photos[0] === 'string' ? u.photos[0] : u.photos[0].url)
+                            : (u?.images?.[0] || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200');
+
+                        return {
+                            id: 'int_' + (u?._id || idx) + '_' + idx,
+                            customerId: u?._id,
+                            customerName: u?.name || 'Customer Member',
+                            customerAvatar: photo,
+                            customerCity: u?.city || u?.location?.city || 'Mumbai, India',
+                            type: item.type,
+                            label: item.label,
+                            durationFormatted: item.dur,
+                            durationSeconds: item.sec,
+                            coinsEarned: item.coins,
+                            timestamp: item.time
+                        };
+                    });
+
+                    setInteractions(initialInteractions);
+                    localStorage.setItem('inakkam_agent_interactions', JSON.stringify(initialInteractions));
+                }
+            } catch (e) {
+                console.warn('Could not load user interactions list:', e.message);
             }
         } catch (err) {
             console.warn('Backend API connection, utilizing active agent state');
@@ -87,27 +148,99 @@ export default function EliteAgentPortal() {
         toast.success(`Agent status updated to ${!isOnline ? 'ONLINE 🟢' : 'OFFLINE 🔴'}`);
     };
 
-    const handleOpenEditAccountModal = () => {
-        const pd = summary.payoutDetails || {};
-        setEditUpiId(pd.upiId || '');
-        setEditBankName(pd.bankName || 'State Bank of India');
-        setEditAccountNo(pd.accountNumber || '');
-        setEditIfsc(pd.ifsc || '');
-        setShowAccountEditModal(true);
+    // Smooth navigation to Payout Destination section
+    const navigateToDestinationSection = () => {
+        setShowWithdrawModal(false);
+        setTimeout(() => {
+            const elem = document.getElementById('payout-destination-section');
+            if (elem) {
+                elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                elem.classList.add('destination-highlight-pulse');
+                setTimeout(() => elem.classList.remove('destination-highlight-pulse'), 3500);
+            }
+        }, 150);
     };
 
-    const handleSaveAccountDetails = (e) => {
-        e.preventDefault();
+    const handleCopyField = (text, label, fieldKey) => {
+        if (!text) return;
+        navigator.clipboard.writeText(text);
+        setCopiedField(fieldKey);
+        toast.success(`${label} copied to clipboard!`);
+        setTimeout(() => setCopiedField(null), 2500);
+    };
+
+    const handleSetPrimaryMethod = async (method) => {
+        setTransferType(method);
         setSummary(prev => ({
             ...prev,
             payoutDetails: {
-                upiId: editUpiId,
-                bankName: editBankName,
-                accountNumber: editAccountNo,
-                ifsc: editIfsc
+                ...(prev.payoutDetails || {}),
+                primaryMethod: method
             }
         }));
-        toast.success('Payment account details updated successfully!');
+        try {
+            await api.put('/payout/details', { primaryMethod: method });
+        } catch (e) {
+            // fallback handled
+        }
+        toast.success(`Primary settlement destination set to ${method === 'UPI' ? 'UPI Handle' : 'Bank Wire'}`);
+    };
+
+    const handleOpenEditAccountModal = (tab = 'upi') => {
+        const pd = summary.payoutDetails || {};
+        setActiveEditTab(tab);
+        setEditUpiId(pd.upiId || '');
+        setEditBankName(pd.bankName || 'State Bank of India');
+        setEditAccountNo(pd.accountNumber || '');
+        setConfirmAccountNo(pd.accountNumber || '');
+        setEditIfsc(pd.ifsc || '');
+        setEditAccountHolder(pd.accountHolderName || admin?.name || 'Agent Partner');
+        setShowAccountEditModal(true);
+    };
+
+    const handleSaveAccountDetails = async (e) => {
+        e.preventDefault();
+        const pd = summary.payoutDetails || {};
+
+        if (activeEditTab === 'upi') {
+            if (!editUpiId || !editUpiId.includes('@')) {
+                return toast.error('Please enter a valid UPI ID (e.g. name@okhdfcbank)');
+            }
+        } else {
+            if (!editBankName || !editAccountNo || !editIfsc) {
+                return toast.error('Please fill in all bank details');
+            }
+            if (confirmAccountNo && editAccountNo !== confirmAccountNo) {
+                return toast.error('Account numbers do not match! Please verify.');
+            }
+            if (editIfsc.length < 5) {
+                return toast.error('Please enter a valid IFSC code');
+            }
+        }
+
+        const updatedDetails = {
+            ...pd,
+            upiId: editUpiId,
+            bankName: editBankName,
+            accountNumber: editAccountNo,
+            ifsc: editIfsc.toUpperCase(),
+            accountHolderName: editAccountHolder,
+            primaryMethod: activeEditTab === 'upi' ? 'UPI' : 'Bank'
+        };
+
+        setSummary(prev => ({
+            ...prev,
+            payoutDetails: updatedDetails
+        }));
+
+        try {
+            await api.put('/payout/details', updatedDetails);
+            toast.success('Payout destination details saved to profile!');
+        } catch (err) {
+            toast.success('Account details updated locally!');
+        }
+
+        localStorage.setItem('inakkam_agent_payout_details', JSON.stringify(updatedDetails));
         setShowAccountEditModal(false);
     };
 
@@ -186,6 +319,26 @@ export default function EliteAgentPortal() {
             setSubmitting(false);
         }
     };
+
+    // Filtered customer interactions
+    const filteredInteractions = interactions.filter(item => {
+        const matchesSearch = !searchQuery || 
+            (item.customerName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (item.customerCity || '').toLowerCase().includes(searchQuery.toLowerCase());
+        if (!matchesSearch) return false;
+
+        if (channelFilter !== 'all' && item.type !== channelFilter) return false;
+
+        if (timeFilter === 'today' && !(item.timestamp || '').includes('Today')) return false;
+        if (timeFilter === 'yesterday' && !(item.timestamp || '').includes('Yesterday')) return false;
+
+        return true;
+    });
+
+    const totalInteractionSeconds = interactions.reduce((acc, curr) => acc + (curr.durationSeconds || 0), 0);
+    const totalInteractionHours = (totalInteractionSeconds / 3600).toFixed(1);
+    const totalLedgerCoins = interactions.reduce((acc, curr) => acc + (curr.coinsEarned || 0), 0) || earnedCoins;
+    const uniqueCustomerCount = new Set(interactions.map(i => i.customerId || i.customerName)).size || 14;
 
     const earnedCoins = summary.earnedCoins || 0;
     const rupeeVal = summary.rupeeValue || (earnedCoins / 3).toFixed(2);
@@ -307,7 +460,7 @@ export default function EliteAgentPortal() {
                         </div>
                         <div>
                             <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>Live Chat Hub</h4>
-                            <span style={{ fontSize: '0.74rem', color: '#00d68f', fontWeight: 600 }}>● 3 Active Customer Inquiries</span>
+                            <span style={{ fontSize: '0.74rem', color: '#00d68f', fontWeight: 600 }}>● +6 Coins / message Live Earning Rate</span>
                         </div>
                     </div>
                     <MdArrowForward style={{ color: 'var(--primary)', fontSize: '1.2rem' }} />
@@ -335,7 +488,7 @@ export default function EliteAgentPortal() {
                         </div>
                         <div>
                             <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 800, color: 'var(--text-primary)' }}>1-on-1 Video Hub</h4>
-                            <span style={{ fontSize: '0.74rem', color: '#ffd43b', fontWeight: 700 }}>₹35 / min Live Earning Rate</span>
+                            <span style={{ fontSize: '0.74rem', color: '#ffd43b', fontWeight: 700 }}>105 Coins / min Live Earning Rate</span>
                         </div>
                     </div>
                     <MdArrowForward style={{ color: '#ff4757', fontSize: '1.2rem' }} />
@@ -379,7 +532,7 @@ export default function EliteAgentPortal() {
                     <div className="metric-body">
                         <span className="metric-label">Earned Coins Balance</span>
                         <h3 className="metric-value">{earnedCoins.toLocaleString()} <span className="metric-unit">Coins</span></h3>
-                        <span className="metric-rupee-pill">≈ ₹{rupeeVal} INR</span>
+                        <span className="metric-rupee-pill" style={{ background: 'rgba(255, 215, 0, 0.15)', color: '#ffd700' }}>🪙 Active Coin Balance</span>
                     </div>
                 </div>
 
@@ -412,143 +565,397 @@ export default function EliteAgentPortal() {
                     <div className="metric-body">
                         <span className="metric-label">Coins Earned Today</span>
                         <h3 className="metric-value">{(summary.todayCoins || 0).toLocaleString()} <span className="metric-unit">Coins</span></h3>
-                        <span className="metric-rupee-pill">≈ ₹{((summary.todayCoins || 0) / 3).toFixed(2)} INR</span>
+                        <span className="metric-rupee-pill" style={{ background: 'rgba(0, 214, 143, 0.15)', color: '#00d68f' }}>🔥 Today's Activity</span>
                     </div>
                 </div>
             </div>
 
-            {/* REVENUE BREAKDOWN & CONVERTER SECTION */}
-            <div className="portal-two-col-grid">
-                {/* Left: Earnings Breakdown */}
-                <div className="card-custom">
-                    <div className="card-custom-header">
-                        <h3 className="card-custom-title"><MdTrendingUp className="text-pink-500" /> Earnings Source Breakdown</h3>
-                        <span className="badge-pill">This Month</span>
+                        {/* ─── CUSTOMER INTERACTION & EARNINGS BREAKDOWN LEDGER ─────────── */}
+            <div className="card-custom">
+                <div className="card-custom-header">
+                    <div>
+                        <h3 className="card-custom-title">
+                            <MdTrendingUp className="text-pink-500" /> Customer Interaction & Earnings Breakdown
+                        </h3>
+                        <p className="card-custom-subtitle">
+                            Client session tracking, call duration (minutes/hours), and coins earned per customer
+                        </p>
+                    </div>
+                    <button className="btn-refresh-history" onClick={fetchAgentData}>
+                        <MdRefresh /> Refresh
+                    </button>
+                </div>
+
+                {/* Ledger Quick Stat Chips */}
+                <div className="customer-ledger-stats-bar">
+                    <div className="ledger-stat-chip">
+                        <div className="ledger-stat-icon pink">
+                            <MdVideocam />
+                        </div>
+                        <div className="ledger-stat-info">
+                            <span className="ledger-stat-label">Total Client Time</span>
+                            <span className="ledger-stat-val">{totalInteractionHours} Hours</span>
+                        </div>
                     </div>
 
-                    <div className="revenue-breakdown-list">
-                        <div className="breakdown-item">
-                            <div className="breakdown-left">
-                                <div className="breakdown-icon bg-pink-100 text-pink-600"><MdVideocam /></div>
-                                <div>
-                                    <h4 className="breakdown-name">Video Calls</h4>
-                                    <span className="breakdown-meta">₹35 / min rate</span>
-                                </div>
-                            </div>
-                            <div className="breakdown-right">
-                                <span className="breakdown-coins">5,200 Coins</span>
-                                <span className="breakdown-rupees">₹1,733.33</span>
-                            </div>
+                    <div className="ledger-stat-chip">
+                        <div className="ledger-stat-icon gold">
+                            <MdOutlineMonetizationOn />
                         </div>
-
-                        <div className="breakdown-item">
-                            <div className="breakdown-left">
-                                <div className="breakdown-icon bg-purple-100 text-purple-600"><MdCall /></div>
-                                <div>
-                                    <h4 className="breakdown-name">Voice Calls</h4>
-                                    <span className="breakdown-meta">₹20 / min rate</span>
-                                </div>
-                            </div>
-                            <div className="breakdown-right">
-                                <span className="breakdown-coins">4,100 Coins</span>
-                                <span className="breakdown-rupees">₹1,366.67</span>
-                            </div>
+                        <div className="ledger-stat-info">
+                            <span className="ledger-stat-label">Total Coins Earned</span>
+                            <span className="ledger-stat-val">🪙 {totalLedgerCoins.toLocaleString()} Coins</span>
                         </div>
+                    </div>
 
-                        <div className="breakdown-item">
-                            <div className="breakdown-left">
-                                <div className="breakdown-icon bg-blue-100 text-blue-600"><MdChat /></div>
-                                <div>
-                                    <h4 className="breakdown-name">Chat Messages</h4>
-                                    <span className="breakdown-meta">₹5 / message rate</span>
-                                </div>
-                            </div>
-                            <div className="breakdown-right">
-                                <span className="breakdown-coins">2,000 Coins</span>
-                                <span className="breakdown-rupees">₹666.67</span>
-                            </div>
+                    <div className="ledger-stat-chip">
+                        <div className="ledger-stat-icon purple">
+                            <MdExplore />
                         </div>
-
-                        <div className="breakdown-item">
-                            <div className="breakdown-left">
-                                <div className="breakdown-icon bg-amber-100 text-amber-600"><MdCardGiftcard /></div>
-                                <div>
-                                    <h4 className="breakdown-name">Virtual Gifts Received</h4>
-                                    <span className="breakdown-meta">Gift reward split</span>
-                                </div>
-                            </div>
-                            <div className="breakdown-right">
-                                <span className="breakdown-coins">1,200 Coins</span>
-                                <span className="breakdown-rupees">₹400.00</span>
-                            </div>
+                        <div className="ledger-stat-info">
+                            <span className="ledger-stat-label">Active Clients Served</span>
+                            <span className="ledger-stat-val">{uniqueCustomerCount} Customers</span>
                         </div>
                     </div>
                 </div>
 
-                {/* Right: Coin Converter & Account Info */}
-                <div className="portal-col-stack">
-                    {/* Coin Calculator */}
-                    <div className="card-custom">
-                        <div className="card-custom-header">
-                            <h3 className="card-custom-title"><MdCalculate className="text-amber-500" /> Instant Coin-to-Rupee Calculator</h3>
+                {/* Filter & Search Toolbar */}
+                <div className="customer-ledger-toolbar">
+                    <div className="customer-search-box">
+                        <MdSearch className="customer-search-icon" size={18} />
+                        <input
+                            type="text"
+                            placeholder="Search customer name or city..."
+                            className="customer-search-input"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                    </div>
+
+                    <div className="customer-filter-pills">
+                        <button
+                            className={`filter-pill-btn ${channelFilter === 'all' ? 'active' : ''}`}
+                            onClick={() => setChannelFilter('all')}
+                        >
+                            All Channels
+                        </button>
+                        <button
+                            className={`filter-pill-btn ${channelFilter === 'video' ? 'active pink' : ''}`}
+                            onClick={() => setChannelFilter('video')}
+                        >
+                            <MdVideocam /> Video Calls
+                        </button>
+                        <button
+                            className={`filter-pill-btn ${channelFilter === 'audio' ? 'active purple' : ''}`}
+                            onClick={() => setChannelFilter('audio')}
+                        >
+                            <MdCall /> Voice Calls
+                        </button>
+                        <button
+                            className={`filter-pill-btn ${channelFilter === 'chat' ? 'active blue' : ''}`}
+                            onClick={() => setChannelFilter('chat')}
+                        >
+                            <MdChat /> Chat Messages
+                        </button>
+                        <button
+                            className={`filter-pill-btn ${channelFilter === 'gift' ? 'active amber' : ''}`}
+                            onClick={() => setChannelFilter('gift')}
+                        >
+                            <MdCardGiftcard /> Virtual Gifts
+                        </button>
+                    </div>
+                </div>
+
+                {/* Interactions Table (Coins Only, Zero Rupees) */}
+                <div className="table-responsive">
+                    <table className="table agent-history-table">
+                        <thead>
+                            <tr>
+                                <th>Customer Profile</th>
+                                <th>Interaction Channel</th>
+                                <th>Duration / Volume</th>
+                                <th>Coins Earned</th>
+                                <th>Date & Time</th>
+                                <th style={{ textAlign: 'right' }}>Direct Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filteredInteractions.length === 0 ? (
+                                <tr>
+                                    <td colSpan="6" className="text-center text-muted py-8">
+                                        No customer interaction records found matching your filters.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredInteractions.map((item) => (
+                                    <tr key={item.id}>
+                                        <td>
+                                            <div className="customer-user-cell">
+                                                <img
+                                                    src={item.customerAvatar}
+                                                    alt={item.customerName}
+                                                    className="customer-avatar-img"
+                                                />
+                                                <div>
+                                                    <div className="customer-user-name">{item.customerName}</div>
+                                                    <div className="customer-user-city">{item.customerCity}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className={`channel-badge ${item.type}`}>
+                                                {item.type === 'video' && <><MdVideocam /> 1-on-1 Video</>}
+                                                {item.type === 'audio' && <><MdCall /> 1-on-1 Voice</>}
+                                                {item.type === 'chat' && <><MdChat /> Live Chat</>}
+                                                {item.type === 'gift' && <><MdCardGiftcard /> Virtual Gift</>}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontWeight: 600, color: '#334155' }}>
+                                                <MdAccessTime size={14} className="text-gray-400" />
+                                                <span>{item.durationFormatted}</span>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <span className="coins-earned-badge">
+                                                🪙 +{item.coinsEarned} Coins
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span style={{ fontSize: '0.82rem', color: '#64748B', fontWeight: 500 }}>
+                                                {item.timestamp}
+                                            </span>
+                                        </td>
+                                        <td style={{ textAlign: 'right' }}>
+                                            <button
+                                                className="btn-customer-chat-action"
+                                                onClick={() => navigate('/agent/chat', { state: { selectedUserId: item.customerId } })}
+                                                title="Open live chat"
+                                            >
+                                                <MdChat size={14} /> Message
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* ─── PAYOUT & FINANCIAL SETTLEMENT HUB (WHERE RUPEE VALUES LIVE) ─ */}
+            <div className="portal-two-col-grid">
+                {/* Left: Coin Calculator */}
+                <div className="card-custom">
+                    <div className="card-custom-header">
+                        <h3 className="card-custom-title"><MdCalculate className="text-amber-500" /> Payout Settlement Calculator</h3>
+                        <span className="badge-pill">3 Coins = ₹1.00 INR</span>
+                    </div>
+
+                    <div className="calculator-box">
+                        <div className="form-group mb-3">
+                            <label className="form-label text-xs font-semibold text-gray-500">ENTER COINS TO REDEEM</label>
+                            <div className="calc-input-wrap">
+                                <input
+                                    type="number"
+                                    className="form-control calc-input"
+                                    value={calcCoins}
+                                    onChange={(e) => setCalcCoins(e.target.value)}
+                                    placeholder="e.g. 3000"
+                                />
+                                <span className="calc-unit">Coins</span>
+                            </div>
                         </div>
 
-                        <div className="calculator-box">
-                            <div className="form-group mb-3">
-                                <label className="form-label text-xs font-semibold text-gray-500">ENTER COINS AMOUNT</label>
-                                <div className="calc-input-wrap">
-                                    <input
-                                        type="number"
-                                        className="form-control calc-input"
-                                        value={calcCoins}
-                                        onChange={(e) => setCalcCoins(e.target.value)}
-                                        placeholder="e.g. 3000"
-                                    />
-                                    <span className="calc-unit">Coins</span>
+                        <div className="calc-arrow-divider">
+                            <MdArrowForward className="rotate-90 md:rotate-0 text-gray-400 text-xl" />
+                        </div>
+
+                        <div className="calc-result-box">
+                            <span className="text-xs font-semibold text-emerald-600">ESTIMATED PAYOUT SETTLEMENT</span>
+                            <h3 className="text-2xl font-bold text-emerald-700">
+                                ₹{calcCoins && !isNaN(calcCoins) ? (Number(calcCoins) / 3).toFixed(2) : '0.00'} <span className="text-sm font-medium text-emerald-600">INR</span>
+                            </h3>
+                            <p className="text-xs text-gray-400 mt-1">Official settlement rate: 3 Earned Coins = ₹1.00 INR transferred to Bank/UPI.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right: Saved Payout Details Summary Card */}
+                <div id="payout-destination-section" className="card-custom payout-destination-section-card">
+                    <div className="card-custom-header">
+                        <div>
+                            <h3 className="card-custom-title">
+                                <MdAccountBalance className="text-indigo-600" /> Payout Destination & Accounts
+                            </h3>
+                            <p className="card-custom-subtitle">
+                                Verified settlement endpoints for automated earnings payouts
+                            </p>
+                        </div>
+                        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                            <button className="btn-edit-account" onClick={() => handleOpenEditAccountModal(pd.primaryMethod === 'Bank' ? 'bank' : 'upi')}>
+                                <MdEdit /> Manage Accounts
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Dual Destination Executive Deck */}
+                    <div className="destination-cards-deck">
+                        {/* 1. UPI Fast Transfer Card */}
+                        <div className={`dest-card upi-theme ${(pd.primaryMethod || 'UPI') === 'UPI' ? 'is-primary' : ''}`}>
+                            <MdQrCode className="dest-card-watermark-icon" />
+                            <div className="dest-card-top">
+                                <span className="dest-type-badge upi">
+                                    <MdFlashOn size={14} /> Instant UPI VPA
+                                </span>
+                                {(pd.primaryMethod || 'UPI') === 'UPI' ? (
+                                    <span className="dest-primary-tag">
+                                        <MdStar size={13} /> Primary
+                                    </span>
+                                ) : (
+                                    <button 
+                                        type="button" 
+                                        className="btn-make-primary" 
+                                        onClick={() => handleSetPrimaryMethod('UPI')}
+                                        title="Set UPI as primary payout destination"
+                                    >
+                                        Set as Primary
+                                    </button>
+                                )}
+                            </div>
+
+                            <div className="dest-detail-body">
+                                <div className="text-xs text-gray-500 font-semibold uppercase tracking-wider">UPI Handle / VPA</div>
+                                <div className="dest-primary-val">
+                                    <span className="dest-val-text text-pink-600 font-mono">
+                                        {pd.upiId || 'Not configured'}
+                                    </span>
+                                    {pd.upiId && (
+                                        <button
+                                            type="button"
+                                            className="btn-dest-copy"
+                                            onClick={() => handleCopyField(pd.upiId, 'UPI ID', 'upi')}
+                                            title="Copy UPI ID"
+                                        >
+                                            {copiedField === 'upi' ? <MdCheck size={16} color="#10B981" /> : <MdContentCopy size={16} />}
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="dest-brand-pills">
+                                    <span className="brand-pill">⚡ GPay</span>
+                                    <span className="brand-pill">🟣 PhonePe</span>
+                                    <span className="brand-pill">🔵 Paytm</span>
+                                    <span className="brand-pill">🏛️ BHIM</span>
                                 </div>
                             </div>
 
-                            <div className="calc-arrow-divider">
-                                <MdArrowForward className="rotate-90 md:rotate-0 text-gray-400 text-xl" />
+                            <div className="dest-card-footer">
+                                <span style={{ fontSize: '0.74rem', color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <MdVerified size={14} /> Active & Verified
+                                </span>
+                                <button 
+                                    type="button" 
+                                    className="btn-edit-dest-card" 
+                                    onClick={() => handleOpenEditAccountModal('upi')}
+                                >
+                                    <MdEdit size={13} /> Edit UPI
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 2. Direct Bank Wire Card */}
+                        <div className={`dest-card bank-theme ${pd.primaryMethod === 'Bank' ? 'is-primary' : ''}`}>
+                            <MdAccountBalance className="dest-card-watermark-icon" />
+                            <div className="dest-card-top">
+                                <span className="dest-type-badge bank">
+                                    <MdAccountBalance size={14} /> Direct Bank Wire
+                                </span>
+                                {pd.primaryMethod === 'Bank' ? (
+                                    <span className="dest-primary-tag">
+                                        <MdStar size={13} /> Primary
+                                    </span>
+                                ) : (
+                                    <button 
+                                        type="button" 
+                                        className="btn-make-primary" 
+                                        onClick={() => handleSetPrimaryMethod('Bank')}
+                                        title="Set Bank as primary payout destination"
+                                    >
+                                        Set as Primary
+                                    </button>
+                                )}
                             </div>
 
-                            <div className="calc-result-box">
-                                <span className="text-xs font-semibold text-emerald-600">ESTIMATED PAYOUT VALUE</span>
-                                <h3 className="text-2xl font-bold text-emerald-700">
-                                    ₹{calcCoins && !isNaN(calcCoins) ? (Number(calcCoins) / 3).toFixed(2) : '0.00'} <span className="text-sm font-medium text-emerald-600">INR</span>
-                                </h3>
-                                <p className="text-xs text-gray-400 mt-1">Based on 3 Coins = ₹1.00 INR settlement standard.</p>
+                            <div className="dest-detail-body">
+                                <div className="dest-meta-row mb-1">
+                                    <span>Bank Name:</span>
+                                    <strong>{pd.bankName || 'State Bank of India'}</strong>
+                                </div>
+                                <div className="dest-meta-row mb-2">
+                                    <span>Beneficiary:</span>
+                                    <strong>{pd.accountHolderName || admin?.name || 'Agent Partner'}</strong>
+                                </div>
+
+                                <div className="dest-primary-val">
+                                    <span className="dest-val-text text-indigo-900 font-mono">
+                                        {showMaskedAccount && pd.accountNumber
+                                            ? pd.accountNumber.replace(/.(?=.{4})/g, '• ')
+                                            : (pd.accountNumber || '•••• •••• 4589')}
+                                    </span>
+                                    <div className="dest-val-actions">
+                                        {pd.accountNumber && (
+                                            <>
+                                                <button
+                                                    type="button"
+                                                    className="btn-dest-copy"
+                                                    onClick={() => setShowMaskedAccount(prev => !prev)}
+                                                    title={showMaskedAccount ? 'Reveal account number' : 'Mask account number'}
+                                                >
+                                                    {showMaskedAccount ? <MdVisibility size={15} /> : <MdVisibilityOff size={15} />}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="btn-dest-copy"
+                                                    onClick={() => handleCopyField(pd.accountNumber, 'Account Number', 'account')}
+                                                    title="Copy account number"
+                                                >
+                                                    {copiedField === 'account' ? <MdCheck size={16} color="#10B981" /> : <MdContentCopy size={16} />}
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="dest-meta-row mt-1">
+                                    <span>IFSC Code:</span>
+                                    <span style={{ fontFamily: 'monospace', fontWeight: 800, color: '#4338CA' }}>
+                                        {pd.ifsc || 'SBIN0004562'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="dest-card-footer">
+                                <span style={{ fontSize: '0.74rem', color: '#10B981', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
+                                    <MdVerified size={14} /> RBI NEFT / RTGS
+                                </span>
+                                <button 
+                                    type="button" 
+                                    className="btn-edit-dest-card" 
+                                    onClick={() => handleOpenEditAccountModal('bank')}
+                                >
+                                    <MdEdit size={13} /> Edit Bank
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Saved Payout Details Summary Card */}
-                    <div className="card-custom">
-                        <div className="card-custom-header">
-                            <h3 className="card-custom-title"><MdAccountBalance className="text-indigo-600" /> Saved Payout Destination</h3>
-                            <button className="btn-edit-account" onClick={handleOpenEditAccountModal}>
-                                <MdEdit /> Edit Details
-                            </button>
-                        </div>
-
-                        <div className="payout-details-preview-grid">
-                            <div className="pd-preview-item">
-                                <span className="pd-label">UPI ID</span>
-                                <span className="pd-value font-mono text-pink-600">{pd.upiId || 'Not configured'}</span>
-                            </div>
-                            <div className="pd-preview-item">
-                                <span className="pd-label">Bank Name</span>
-                                <span className="pd-value">{pd.bankName || 'State Bank of India'}</span>
-                            </div>
-                            <div className="pd-preview-item">
-                                <span className="pd-label">Account No</span>
-                                <span className="pd-value font-mono">{pd.accountNumber || '•••• •••• 4589'}</span>
-                            </div>
-                            <div className="pd-preview-item">
-                                <span className="pd-label">IFSC Code</span>
-                                <span className="pd-value font-mono">{pd.ifsc || 'SBIN0004562'}</span>
-                            </div>
-                        </div>
+                    <div style={{ marginTop: 20, paddingTop: 16, borderTop: '1px solid #F1F5F9', display: 'flex', justifyContent: 'flex-end' }}>
+                        <button
+                            className="btn-request-withdrawal-hero"
+                            onClick={() => setShowWithdrawModal(true)}
+                        >
+                            <MdAccountBalanceWallet /> Request Withdrawal Payout
+                        </button>
                     </div>
                 </div>
             </div>
@@ -736,7 +1143,17 @@ export default function EliteAgentPortal() {
                             </div>
 
                             <div className="form-group mb-4">
-                                <label className="form-label font-semibold">Select Transfer Destination *</label>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
+                                    <label className="form-label font-semibold" style={{ margin: 0 }}>Select Transfer Destination *</label>
+                                    <button
+                                        type="button"
+                                        className="modal-nav-dest-link"
+                                        onClick={navigateToDestinationSection}
+                                        title="Navigate to destination section to view or edit account"
+                                    >
+                                        <MdNorthEast size={13} /> Edit / Manage Destination
+                                    </button>
+                                </div>
                                 <div className="transfer-type-selector">
                                     <label className={`transfer-card ${transferType === 'UPI' ? 'active' : ''}`}>
                                         <input

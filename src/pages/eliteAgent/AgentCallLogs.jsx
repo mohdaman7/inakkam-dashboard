@@ -222,8 +222,8 @@ export default function AgentCallLogs() {
                         <MdFlashOn />
                     </div>
                     <div className="call-stat-meta">
-                        <span className="call-stat-label">Total Rupee Payout</span>
-                        <h3 className="call-stat-value">₹{Number(totalRupees).toLocaleString()}</h3>
+                        <span className="call-stat-label">Total Call Coins</span>
+                        <h3 className="call-stat-value">🪙 {logs.reduce((acc, curr) => acc + (curr.coinsEarned || 0), 0).toLocaleString()} Coins</h3>
                     </div>
                 </div>
             </div>
@@ -302,7 +302,6 @@ export default function AgentCallLogs() {
                                     <th>Call Session</th>
                                     <th>Duration</th>
                                     <th>Coins Earned</th>
-                                    <th>Rupee Value</th>
                                     <th>Date & Time</th>
                                     <th>Status</th>
                                     <th style={{ textAlign: 'right' }}>Actions</th>
@@ -337,12 +336,7 @@ export default function AgentCallLogs() {
                                         </td>
                                         <td>
                                             <span className="call-coins-value">
-                                                +{log.coinsEarned}
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <span className="call-rupee-value">
-                                                {log.rupeesEarned}
+                                                +{log.coinsEarned} Coins
                                             </span>
                                         </td>
                                         <td>

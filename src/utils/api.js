@@ -23,7 +23,8 @@ api.interceptors.request.use((config) => {
         url.startsWith('/conversations') ||
         url.startsWith('/coins') ||
         url.startsWith('/matches') ||
-        url.startsWith('/auth')
+        url.startsWith('/auth') ||
+        url.startsWith('/payout/')
     ) {
         config.baseURL = `${API_BASE_URL}/api`;
     } else {
