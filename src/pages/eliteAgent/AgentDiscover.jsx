@@ -225,8 +225,13 @@ export default function AgentDiscover() {
                     }
                 }
 
-                if (fetchedList && fetchedList.length > 0) {
-                    const normalized = fetchedList.map((u, i) => normalizeUser(u, i));
+                // Strictly filter to Real Paying Customers only (Agents/Staff are NEVER displayed)
+                const realCustomers = (fetchedList || []).filter(u => 
+                    !u.isEliteAgent && !u.isStaff && u.role !== 'staff' && u.role !== 'admin'
+                );
+
+                if (realCustomers && realCustomers.length > 0) {
+                    const normalized = realCustomers.map((u, i) => normalizeUser(u, i));
                     setUsers(normalized);
                 } else {
                     setUsers(DEFAULT_USERS.map((u, i) => normalizeUser(u, i)));

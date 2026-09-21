@@ -179,7 +179,12 @@ export default function AgentChat() {
             try {
                 const res = await api.get('/conversations');
                 if (res.data?.success && res.data.conversations?.length > 0) {
-                    const formatted = res.data.conversations.map(c => {
+                    // Strictly filter conversations to Real Customers only (no peer agents)
+                    const customerConvs = res.data.conversations.filter(c => {
+                        const other = c.user || {};
+                        return !other.isEliteAgent && !other.isStaff && other.role !== 'staff' && other.role !== 'admin';
+                    });
+                    const formatted = customerConvs.map(c => {
                         const otherUser = c.user || {};
                         const avatar = otherUser.photos?.[0]
                             ? (typeof otherUser.photos[0] === 'string' ? otherUser.photos[0] : otherUser.photos[0].url)
@@ -208,7 +213,11 @@ export default function AgentChat() {
             // Fallback: Fetch real users from MongoDB directory so all calls connect to real accounts
             try {
                 const usersRes = await api.get('/users');
-                const userList = usersRes.data?.users || usersRes.data?.data || [];
+                const rawUserList = usersRes.data?.users || usersRes.data?.data || [];
+                // Strictly filter to Real Paying Customers only
+                const userList = rawUserList.filter(u => 
+                    !u.isEliteAgent && !u.isStaff && u.role !== 'staff' && u.role !== 'admin'
+                );
                 if (userList.length > 0) {
                     const formatted = userList.map(u => {
                         const avatar = u.photos?.[0]

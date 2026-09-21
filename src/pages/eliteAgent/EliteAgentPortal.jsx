@@ -85,7 +85,11 @@ export default function EliteAgentPortal() {
             // Load real customers & generate persistent interaction records
             try {
                 const uRes = await api.get('/users');
-                const realUsers = uRes.data?.users || uRes.data?.data || [];
+                const rawUsers = uRes.data?.users || uRes.data?.data || [];
+                // Strictly filter to real customers (agents/staff excluded)
+                const realUsers = rawUsers.filter(u => 
+                    !u.isEliteAgent && !u.isStaff && u.role !== 'staff' && u.role !== 'admin'
+                );
 
                 const storedInteractions = localStorage.getItem('inakkam_agent_interactions');
                 if (storedInteractions) {

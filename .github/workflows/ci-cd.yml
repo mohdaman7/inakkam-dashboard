@@ -1,0 +1,63 @@
+name: Admin & Agent Dashboard CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-verify:
+    name: Build & Verify Admin Dashboard
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci --prefer-offline --no-audit
+
+      - name: Build Production Bundle
+        run: npm run build
+        env:
+          NODE_ENV: production
+          VITE_API_URL: ${{ secrets.VITE_API_URL || 'https://api.inakkam.com' }}
+
+      - name: Verify Build Artifacts
+        run: |
+          test -f dist/index.html || (echo "dist/index.html missing" && exit 1)
+          echo "Dashboard build verified successfully!"
+
+      - name: Upload Build Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: inakkam-dashboard-dist
+          path: dist/
+          retention-days: 7
+
+  deploy:
+    name: Deploy Dashboard
+    needs: build-and-verify
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: inakkam-dashboard-dist
+          path: dist
+
+      - name: Deployment Ready
+        run: |
+          echo "Dashboard production package verified and ready for deployment."
