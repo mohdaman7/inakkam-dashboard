@@ -339,14 +339,14 @@ export default function EliteAgentPortal() {
         return true;
     });
 
+    const earnedCoins = summary.earnedCoins || 0;
+    const rupeeVal = summary.rupeeValue || (earnedCoins / 3).toFixed(2);
+    const pd = summary.payoutDetails || {};
+
     const totalInteractionSeconds = interactions.reduce((acc, curr) => acc + (curr.durationSeconds || 0), 0);
     const totalInteractionHours = (totalInteractionSeconds / 3600).toFixed(1);
     const totalLedgerCoins = interactions.reduce((acc, curr) => acc + (curr.coinsEarned || 0), 0) || earnedCoins;
     const uniqueCustomerCount = new Set(interactions.map(i => i.customerId || i.customerName)).size || 14;
-
-    const earnedCoins = summary.earnedCoins || 0;
-    const rupeeVal = summary.rupeeValue || (earnedCoins / 3).toFixed(2);
-    const pd = summary.payoutDetails || {};
 
     return (
         <div className="agent-portal-wrapper">
