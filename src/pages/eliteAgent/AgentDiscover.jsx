@@ -271,7 +271,7 @@ export default function AgentDiscover() {
 
     const handleStartChat = (user) => {
         toast.success(`Opening direct chat with ${user.name}`);
-        navigate('/agent/chat', { state: { selectedUser: user } });
+        navigate('/agent/chat', { state: { selectedUser: user, selectedUserId: user._id || user.id } });
     };
 
     const handleStartCall = async (user, callType = 'video') => {

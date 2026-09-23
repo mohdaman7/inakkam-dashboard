@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import {
     Send, Smile, Phone, Video, Info,
@@ -27,6 +27,24 @@ const CANNED_REPLIES = [
     "Thank you so much for the compliment! ❤️",
     "What are your plans for this weekend? ✨"
 ];
+
+const createChatItemFromUser = (targetUser) => {
+    if (!targetUser) return null;
+    const avatar = targetUser.photos?.[0]
+        ? (typeof targetUser.photos[0] === 'string' ? targetUser.photos[0] : (targetUser.photos[0]?.url || ''))
+        : (targetUser.photosList?.[0] || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300');
+    const uId = String(targetUser._id || targetUser.id || targetUser.userId);
+    return {
+        id: uId,
+        conversationId: uId,
+        userName: targetUser.name || 'Member',
+        userImage: avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300',
+        lastActive: targetUser.isOnline ? 'Online' : 'Recently active',
+        userId: uId,
+        user: targetUser,
+        lastMessage: { text: 'Start conversation...', createdAt: new Date().toISOString() }
+    };
+};
 
 const DEFAULT_DEMO_CHATS = [
     {
@@ -102,6 +120,7 @@ const DEFAULT_DEMO_CHATS = [
 
 export default function AgentChat() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { admin } = useAuth();
     const currentUser = admin || { _id: 'agent_current', name: 'Elite Agent' };
 
@@ -158,10 +177,35 @@ export default function AgentChat() {
 
     // Active Chat Object
     const activeChat = activeChatId
-        ? chats.find(c => String(c.id || c.conversationId) === String(activeChatId) || String(c.conversationId) === String(activeChatId))
+        ? chats.find(c => String(c.id) === String(activeChatId) || String(c.conversationId) === String(activeChatId) || String(c.userId) === String(activeChatId) || String(c.user?._id) === String(activeChatId))
         : null;
 
     const activeChatMessages = (activeChatId && messagesMap[activeChatId]) ? messagesMap[activeChatId] : [];
+
+    // Dynamically react to navigation state when opening direct chat with a member
+    useEffect(() => {
+        const targetUser = location.state?.selectedUser;
+        const targetUserId = location.state?.selectedUserId || targetUser?._id || targetUser?.id;
+        if (!targetUserId) return;
+
+        setChats(prevChats => {
+            const found = prevChats.find(c =>
+                String(c.userId) === String(targetUserId) ||
+                String(c.user?._id) === String(targetUserId) ||
+                String(c.id) === String(targetUserId) ||
+                String(c.conversationId) === String(targetUserId)
+            );
+            if (found) {
+                setActiveChatId(found.id || found.conversationId);
+                return prevChats;
+            } else if (targetUser) {
+                const newChat = createChatItemFromUser(targetUser);
+                setActiveChatId(newChat.id);
+                return [newChat, ...prevChats];
+            }
+            return prevChats;
+        });
+    }, [location.state]);
 
     // Initialize Socket & Conversations on Mount
     useEffect(() => {
@@ -174,6 +218,9 @@ export default function AgentChat() {
             initiateSocketConnection(userId, token);
         }
 
+        const targetUser = location.state?.selectedUser;
+        const targetUserId = location.state?.selectedUserId || targetUser?._id || targetUser?.id;
+
         // Fetch Conversations
         const loadConversations = async () => {
             try {
@@ -184,7 +231,7 @@ export default function AgentChat() {
                         const other = c.user || {};
                         return !other.isEliteAgent && !other.isStaff && other.role !== 'staff' && other.role !== 'admin';
                     });
-                    const formatted = customerConvs.map(c => {
+                    let formatted = customerConvs.map(c => {
                         const otherUser = c.user || {};
                         const avatar = otherUser.photos?.[0]
                             ? (typeof otherUser.photos[0] === 'string' ? otherUser.photos[0] : otherUser.photos[0].url)
@@ -200,8 +247,26 @@ export default function AgentChat() {
                             lastMessage: c.lastMessage || { text: 'Start conversation...', createdAt: c.updatedAt }
                         };
                     });
+                    let targetActiveId = null;
+                    if (targetUserId) {
+                        const found = formatted.find(c =>
+                            String(c.userId) === String(targetUserId) ||
+                            String(c.user?._id) === String(targetUserId) ||
+                            String(c.id) === String(targetUserId) ||
+                            String(c.conversationId) === String(targetUserId)
+                        );
+                        if (found) {
+                            targetActiveId = found.id || found.conversationId;
+                        } else if (targetUser) {
+                            const newChat = createChatItemFromUser(targetUser);
+                            formatted = [newChat, ...formatted];
+                            targetActiveId = newChat.id;
+                        }
+                    }
                     setChats(formatted);
-                    if (!activeChatId && formatted.length > 0) {
+                    if (targetActiveId) {
+                        setActiveChatId(targetActiveId);
+                    } else if (!activeChatId && formatted.length > 0) {
                         setActiveChatId(formatted[0].id);
                     }
                     return;
@@ -219,7 +284,7 @@ export default function AgentChat() {
                     !u.isEliteAgent && !u.isStaff && u.role !== 'staff' && u.role !== 'admin'
                 );
                 if (userList.length > 0) {
-                    const formatted = userList.map(u => {
+                    let formatted = userList.map(u => {
                         const avatar = u.photos?.[0]
                             ? (typeof u.photos[0] === 'string' ? u.photos[0] : u.photos[0].url)
                             : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=300';
@@ -234,8 +299,25 @@ export default function AgentChat() {
                             lastMessage: { text: 'Click to connect live session', createdAt: u.createdAt || new Date().toISOString() }
                         };
                     });
+                    let targetActiveId = null;
+                    if (targetUserId) {
+                        const found = formatted.find(c =>
+                            String(c.userId) === String(targetUserId) ||
+                            String(c.user?._id) === String(targetUserId) ||
+                            String(c.id) === String(targetUserId)
+                        );
+                        if (found) {
+                            targetActiveId = found.id || found.conversationId;
+                        } else if (targetUser) {
+                            const newChat = createChatItemFromUser(targetUser);
+                            formatted = [newChat, ...formatted];
+                            targetActiveId = newChat.id;
+                        }
+                    }
                     setChats(formatted);
-                    if (!activeChatId && formatted.length > 0) {
+                    if (targetActiveId) {
+                        setActiveChatId(targetActiveId);
+                    } else if (!activeChatId && formatted.length > 0) {
                         setActiveChatId(formatted[0].id);
                     }
                     return;
@@ -244,8 +326,29 @@ export default function AgentChat() {
                 console.log('Could not load user list');
             }
 
-            setChats(DEFAULT_DEMO_CHATS);
-            if (!activeChatId) setActiveChatId(DEFAULT_DEMO_CHATS[0].id);
+            let formatted = [...DEFAULT_DEMO_CHATS];
+            let targetActiveId = null;
+            if (targetUserId) {
+                const found = formatted.find(c =>
+                    String(c.userId) === String(targetUserId) ||
+                    String(c.user?._id) === String(targetUserId) ||
+                    String(c.id) === String(targetUserId) ||
+                    String(c.conversationId) === String(targetUserId)
+                );
+                if (found) {
+                    targetActiveId = found.id;
+                } else if (targetUser) {
+                    const newChat = createChatItemFromUser(targetUser);
+                    formatted = [newChat, ...formatted];
+                    targetActiveId = newChat.id;
+                }
+            }
+            setChats(formatted);
+            if (targetActiveId) {
+                setActiveChatId(targetActiveId);
+            } else if (!activeChatId && formatted.length > 0) {
+                setActiveChatId(formatted[0].id);
+            }
         };
 
         loadConversations();
@@ -574,7 +677,25 @@ export default function AgentChat() {
         }
 
         try {
-            await api.post(`/conversations/${activeId}/messages`, { text: textToSend });
+            const res = await api.post(`/conversations/${activeId}/messages`, { text: textToSend });
+            if (res.data?.message?.conversation) {
+                const realConvId = String(res.data.message.conversation);
+                if (realConvId && realConvId !== String(activeId)) {
+                    setChats(prev => prev.map(c => 
+                        (String(c.id) === String(activeId) || String(c.conversationId) === String(activeId))
+                            ? { ...c, id: realConvId, conversationId: realConvId }
+                            : c
+                    ));
+                    setMessagesMap(prev => {
+                        const existing = prev[activeId] || [];
+                        return {
+                            ...prev,
+                            [realConvId]: existing
+                        };
+                    });
+                    setActiveChatId(realConvId);
+                }
+            }
         } catch (err) {
             console.log('Message delivered via socket');
         }
